@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://cvtwvr5oi1w2x"]
 
+[ext_resource type="PackedScene" uid="uid://bre1r7y6eerhs" path="res://scenes/dig_site.tscn" id="1_o5qli"]
+
 [node name="Main" type="Node2D" unique_id=1062774910]
 
 [node name="Background" type="ColorRect" parent="." unique_id=659208622]
@@ -7,9 +9,12 @@ offset_right = 640.0
 offset_bottom = 360.0
 color = Color(0.23137255, 0.18431373, 0.16470589, 1)
 
+[node name="DigSite" parent="." unique_id=1760915373 instance=ExtResource("1_o5qli")]
+position = Vector2(52, 52)
+
 [node name="Title" type="Label" parent="." unique_id=316504727]
-offset_left = 16.0
+offset_left = 52.0
 offset_top = 16.0
-offset_right = 69.0
+offset_right = 105.0
 offset_bottom = 39.0
 text = "SKAVO"

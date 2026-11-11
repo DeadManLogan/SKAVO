@@ -56,6 +56,8 @@ Current status and handoff notes: [docs/progress.md](../docs/progress.md), impor
 
 ## Docs
 `docs/` explains how each part works and why it was built that way. Keep it in sync with the code: when a feature changes how something works, update its doc in the same feature. Code is the source of truth. If a doc and the code disagree, trust the code and fix the doc.
+
+When I ask a question about the project (how something works, why it was built that way, what the plan for it is), add the answer to the relevant doc in the same turn if it's worth keeping: decisions with their reasons, tradeoffs, plans for later features. Write it as part of that system's description, not as a Q&A log. Skip one-off questions and anything that only matters to the current conversation. If no doc fits, create one and add it to `docs/README.md`.
 - [docs/README.md](../docs/README.md): index
 
 ## Avoid

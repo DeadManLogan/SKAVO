@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://bre1r7y6eerhs"]
+
+[ext_resource type="Script" uid="uid://dt10rq4v6s1x6" path="res://scripts/dig_site.gd" id="1_7gt3p"]
+
+[node name="DigSite" type="Node2D" unique_id=1760915373]
+script = ExtResource("1_7gt3p")

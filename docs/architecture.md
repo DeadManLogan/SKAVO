@@ -29,8 +29,10 @@ No managers, autoload singletons, event buses or state machines until a feature 
 
 ## Scene tree (current)
 ```
-Main (Node2D)            scenes/main.tscn, main scene
+Main (Node2D)               scenes/main.tscn, main scene
 ├── Background (ColorRect)  640x360, #3b2f2a placeholder
-└── Title (Label)           placeholder
+├── DigSite (Node2D)        scenes/dig_site.tscn, at (52, 52)
+│   └── Tile x64 (Node2D)   scenes/tile.tscn, spawned at runtime
+└── Title (Label)           placeholder, at (52, 16)
 ```
-Feature 2 adds a DigSite scene that builds the grid of Tile nodes. See [grid.md](grid.md).
+Children draw in tree order, so Background must stay first. Screen layout: the grid takes x 52–308, and x 308–640 is reserved for the side panel (hint, dig counter). See [grid.md](grid.md).
