@@ -24,13 +24,16 @@ Artifacts will be a custom `Resource` (name, era, sprite, blurb) saved as `.tres
 ### Nodes talk through signals
 A child emits a signal and its parent (or whoever instanced it) connects to it. Avoid `get_node("../../Something")` style lookups. Parents may call methods on their own children directly. This keeps scenes reusable and their dependencies visible in one place.
 
+### Input: game clicks go through `_unhandled_input`
+Godot delivers input in order: `_input`, then GUI (Controls), then `_unhandled_input`. Game clicks (digging) are read in `_unhandled_input`, so any Control under the mouse with **Mouse → Filter = Stop** (the default for `ColorRect`, `Panel`, `Button`) swallows the click first. That's what we want for real UI like the found-artifact popup, which then blocks digging with no extra code. Decorative Controls that cover the grid or the screen (like `Background`) must be set to **Filter = Ignore**, or clicks never reach the game.
+
 ### Simplest thing that works
 No managers, autoload singletons, event buses or state machines until a feature actually needs one. Each feature adds only what it needs.
 
 ## Scene tree (current)
 ```
-Main (Node2D)               scenes/main.tscn, main scene
-├── Background (ColorRect)  640x360, #3b2f2a placeholder
+Main (Node2D)               scenes/main.tscn, main scene, scripts/main.gd (min window size)
+├── Background (ColorRect)  640x360, #3b2f2a placeholder, Mouse Filter = Ignore
 ├── DigSite (Node2D)        scenes/dig_site.tscn, at (52, 52)
 │   └── Tile x64 (Node2D)   scenes/tile.tscn, spawned at runtime
 └── Title (Label)           placeholder, at (52, 16)

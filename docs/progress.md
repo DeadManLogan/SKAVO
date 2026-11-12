@@ -2,7 +2,7 @@
 
 - [x] 1. Godot project setup
 - [x] 2. Grid and dig-site scene
-- [ ] 3. Tile digging (click to dig)
+- [x] 3. Tile digging (click to dig)
 - [ ] 4. Dig limit and run-end state
 - [ ] 5. Artifact data definition (Resource)
 - [ ] 6. Artifact placement (random burial)
@@ -64,3 +64,29 @@ scenes/main.tscn           Main > Background, DigSite (52, 52), Title (52, 16)
 - `DigGrid` has no per-cell state yet. Dug state goes there.
 - DigSite doesn't keep references to its tiles by cell yet. Digging will need that lookup to update the clicked tile.
 - `Tile` picks its shade once in `_ready()`. Any visual change needs `queue_redraw()`.
+
+### 3. Tile digging (click to dig)
+**Built:** Left-clicking an undug tile digs it, and it turns dark brown (`#4a3628`). Clicking a dug tile or off the grid does nothing. The window can't shrink below 640x360.
+
+**Structure:**
+```
+scripts/grid/dig_grid.gd   + is_dug(cell), dig(cell) -> bool, _dug: Dictionary[Vector2i, bool] (used as a set)
+scripts/tile.gd            + dug_color (@export), set_dug(); _draw() picks dirt or dug color
+scripts/dig_site.gd        + _tiles: Dictionary[Vector2i, Tile], _unhandled_input, _try_dig(cell)
+scripts/main.gd            new, on Main: sets the window's min size to the viewport size
+scenes/main.tscn           Main gets main.gd; Background Mouse Filter = Ignore
+```
+
+**Decisions:**
+- Clicks are read in `DigSite._unhandled_input`, not with an `Area2D` per tile: one handler, and UI with Mouse Filter = Stop (the popup in feature 9) blocks digging automatically.
+- The click position comes from `make_input_local(event).position`, the event's own position in DigSite space, rather than polling the mouse.
+- `dig()` returns `false` for out-of-bounds or already-dug cells, so DigSite needs no bounds check of its own.
+- `Tile._is_dug` only controls the look. `DigGrid` owns the dug state.
+- Background is set to Mouse Filter = Ignore. A full-screen `ColorRect` defaults to Stop and swallowed every click.
+- Minimum window size of 640x360: below 1x, integer scaling crops the image and clicks land a row off. Game embedding in the editor is disabled, because the embedded window ignores `min_size` (see [project-setup.md](project-setup.md)).
+- No `tile_dug` signal yet, because nothing listens for it.
+
+**Next feature needs to know (4, dig limit and run-end):**
+- A successful dig happens in `DigSite._try_dig()`, when `grid.dig(cell)` returns `true`. That's where to count digs and emit a signal (for example `tile_dug(cell)`) for the dig counter UI.
+- Run-end must stop digging. The simplest way is a guard in `_try_dig` (or `DigGrid` refusing to dig) once the limit is reached.
+- Any new UI Control placed over the grid blocks clicks unless its Mouse Filter is Ignore. Side-panel UI (x 308–640) doesn't overlap the grid.
