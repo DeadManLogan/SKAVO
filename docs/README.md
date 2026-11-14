@@ -9,6 +9,7 @@ How the game is built and why. Code is the source of truth. If a doc disagrees w
 | [project-setup.md](project-setup.md) | Display, stretch and rendering settings and why they were chosen |
 | [grid.md](grid.md) | `DigGrid`, cell coordinates, tile rendering |
 | [run.md](run.md) | Dig limit, run-end signals, side-panel UI |
+| [art-brief.md](art-brief.md) | Sprite specs and artifact list for the pixel-art agent (separate art repo) |
 
 New system, new doc: when a feature adds a system that needs explaining (artifacts, hints, run state), add a doc here and a row to this table.
 

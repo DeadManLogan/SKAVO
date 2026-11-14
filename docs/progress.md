@@ -4,7 +4,7 @@
 - [x] 2. Grid and dig-site scene
 - [x] 3. Tile digging (click to dig)
 - [x] 4. Dig limit and run-end state
-- [ ] 5. Artifact data definition (Resource)
+- [ ] 5. Artifact data definition (Resource) (in progress)
 - [ ] 6. Artifact placement (random burial)
 - [ ] 7. Artifact discovery on dig
 - [ ] 8. Closest-artifact hint
@@ -113,3 +113,20 @@ scenes/main.tscn           + DigsLabel (340, 52), RunOverLabel (340, 80, hidden)
 - Feature 5 is independent of the run state: a `Resource` script and `.tres` files in `data/artifacts/`, and no scene changes are needed.
 - Later features: `_try_dig` is where a successful dig happens (discovery in 7, hint in 8). Side-panel labels start at x 340, with the counter at y 52 and the run-over message at y 80. Put the hint (8) below those.
 - Restart (12) needs a fresh `DigGrid` and tiles reset, plus `RunOverLabel` hidden again.
+
+### 5. Artifact data definition (Resource) (in progress)
+**Goal:** Define an `Artifact` Resource (name, era, sprite, blurb), make the 10 Roman-era artifacts as `.tres` files in `data/artifacts/`, and add a loader that picks up every file in that folder. At F5, the Output panel lists the 10 loaded artifacts.
+
+**Tasks:**
+- [ ] 1. `scripts/artifacts/artifact.gd`: `Artifact` Resource with typed exports and `static func load_all()`. Check: "Artifact" appears in New Resource.
+- [ ] 2. Create the first artifact in the editor, with a temporary print in `Main._ready()`. Check: it's listed at F5.
+- [ ] 3. Add the other 9 `.tres` files. Check: 10 listed.
+- [ ] 4. Docs: `docs/artifacts.md` and a row in `docs/README.md`.
+
+**Artifacts:** silver denarius, terracotta oil lamp, stamped amphora handle, bronze fibula, strigil, bronze stylus, terra sigillata sherd, lead sling bullet, glass unguentarium, bone gaming die.
+
+**Decisions so far:**
+- `era` is a display `String`. `blurb` uses `@export_multiline` and stays at about 2–3 sentences. No `id` field, because the file path is unique.
+- An `Artifact` `.tres` is the definition of a kind of find, not a find in a run. `load()` caches, so every reference shares one instance. Per-run state (where it's buried, whether it's found) lives in the grid logic, never in the Resource.
+- New fields can be added later (for example rarity). Existing `.tres` files keep working and get the field's default value.
+- `sprite` stays empty until feature 10. Artifact sprites are made in the separate art repo and delivered as PNGs into `art/`. This repo produces no art.
