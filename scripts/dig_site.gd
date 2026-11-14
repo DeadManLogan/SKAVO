@@ -1,7 +1,11 @@
 class_name DigSite
 extends Node2D
 
+signal digs_left_changed(digs_left: int)
+signal run_ended
+
 const GRID_SIZE := Vector2i(8, 8)
+const DIG_LIMIT := 12
 const TILE_SCENE := preload("res://scenes/tile.tscn")
 
 var grid: DigGrid
@@ -10,7 +14,7 @@ var _tiles: Dictionary[Vector2i, Tile] = {}
 
 
 func _ready() -> void:
-	grid = DigGrid.new(GRID_SIZE.x, GRID_SIZE.y)
+	grid = DigGrid.new(GRID_SIZE.x, GRID_SIZE.y, DIG_LIMIT)
 	_spawn_tiles()
 
 
@@ -33,8 +37,12 @@ func local_to_cell(local_pos: Vector2) -> Vector2i:
 
 
 func _try_dig(cell: Vector2i) -> void:
-	if grid.dig(cell):
-		_tiles[cell].set_dug()
+	if not grid.dig(cell):
+		return
+	_tiles[cell].set_dug()
+	digs_left_changed.emit(grid.digs_left())
+	if grid.digs_left() == 0:
+		run_ended.emit()
 
 
 func _spawn_tiles() -> void:

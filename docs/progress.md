@@ -3,7 +3,7 @@
 - [x] 1. Godot project setup
 - [x] 2. Grid and dig-site scene
 - [x] 3. Tile digging (click to dig)
-- [ ] 4. Dig limit and run-end state
+- [ ] 4. Dig limit and run-end state (in progress)
 - [ ] 5. Artifact data definition (Resource)
 - [ ] 6. Artifact placement (random burial)
 - [ ] 7. Artifact discovery on dig
@@ -90,3 +90,16 @@ scenes/main.tscn           Main gets main.gd; Background Mouse Filter = Ignore
 - A successful dig happens in `DigSite._try_dig()`, when `grid.dig(cell)` returns `true`. That's where to count digs and emit a signal (for example `tile_dug(cell)`) for the dig counter UI.
 - Run-end must stop digging. The simplest way is a guard in `_try_dig` (or `DigGrid` refusing to dig) once the limit is reached.
 - Any new UI Control placed over the grid blocks clicks unless its Mouse Filter is Ignore. Side-panel UI (x 308–640) doesn't overlap the grid.
+
+### 4. Dig limit and run-end state (in progress)
+**Goal:** Each run gets 12 digs. A side-panel counter shows how many are left. At 0, digging stops and an "Out of digs" message appears.
+
+**Tasks:**
+- [x] 1. Dig limit in `DigGrid`: `dig_limit` in `_init`, `digs_left()`, `dig()` refuses at 0. DigSite passes the limit.
+- [x] 2. `DigSite` signals: `digs_left_changed(digs_left)` and `run_ended()`, connected to printing handlers in `main.gd`.
+- [x] 3. Side-panel UI: `DigsLabel` and hidden `RunOverLabel` under Main, updated by the handlers.
+
+**Decisions:**
+- The limit lives in `DigGrid`, and the number of digs used is `_dug.size()`, so there's no second counter to keep in sync.
+- `DigSite` emits signals and `Main` owns the labels, so DigSite stays UI-free. `run_ended` is the hook for the feature 11 summary.
+- The run-end display is just a label. Summary is feature 11, restart is feature 12.

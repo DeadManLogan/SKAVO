@@ -21,3 +21,20 @@ offset_top = 16.0
 offset_right = 105.0
 offset_bottom = 39.0
 text = "SKAVO"
+
+[node name="DigsLabel" type="Label" parent="." unique_id=594478727]
+offset_left = 340.0
+offset_top = 52.0
+offset_right = 380.0
+offset_bottom = 75.0
+
+[node name="RunOverLabel" type="Label" parent="." unique_id=1767515119]
+visible = false
+offset_left = 340.0
+offset_top = 80.0
+offset_right = 425.0
+offset_bottom = 103.0
+text = "Out of digs"
+
+[connection signal="digs_left_changed" from="DigSite" to="." method="_on_dig_site_digs_left_changed"]
+[connection signal="run_ended" from="DigSite" to="." method="_on_dig_site_run_ended"]
