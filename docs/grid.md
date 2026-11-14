@@ -7,17 +7,20 @@ A cell is a `Vector2i(x, y)`, with `(0, 0)` at the top-left, `x` to the right an
 The logic side of the grid. `class_name DigGrid`, `extends RefCounted`, no Node or scene dependency.
 
 ```gdscript
-var grid := DigGrid.new(8, 8)
+var grid := DigGrid.new(8, 8, 12)  # width, height, dig limit
 grid.is_in_bounds(Vector2i(8, 0))  # false
 grid.dig(Vector2i(0, 0))           # true
 grid.dig(Vector2i(0, 0))           # false, already dug
 grid.is_dug(Vector2i(0, 0))        # true
+grid.digs_left()                   # 11
 ```
 
 - `width`, `height`: grid size in cells.
+- `dig_limit`: how many digs the run allows. See [run.md](run.md).
 - `is_in_bounds(cell)`: whether a cell is inside the grid.
 - `is_dug(cell)`: whether the cell has been dug.
-- `dig(cell) -> bool`: marks the cell dug. It returns `false` and changes nothing if the cell is out of bounds or already dug, so callers only react to real digs, and off-grid clicks need no separate check.
+- `digs_left() -> int`: `dig_limit - _dug.size()`. Every dug cell used exactly one dig, so there's no separate counter.
+- `dig(cell) -> bool`: marks the cell dug. It returns `false` and changes nothing if no digs are left or the cell is out of bounds or already dug, so callers only react to real digs, and off-grid clicks need no separate check.
 
 Dug cells are stored in `_dug: Dictionary[Vector2i, bool]`, used as a set: a cell is dug if it's a key. It's keyed by the same `Vector2i` used everywhere else, and artifact positions can be stored the same way. `DigGrid` is the source of truth for dug state. `class_name` registers it globally, so no `preload` is needed.
 
@@ -34,7 +37,7 @@ A `Node2D` that draws one `SIZE` x `SIZE` (32x32) square in `_draw()`, from its 
 `Tile.SIZE` is the single source of truth for tile size.
 
 ## DigSite (`scripts/dig_site.gd`, `scenes/dig_site.tscn`)
-A `Node2D` that owns a `DigGrid` (`GRID_SIZE` = 8x8) and spawns one Tile per cell in `_ready()`. The tiles exist only at runtime: the saved scene is just the root node, and you can see the tiles in the Remote scene tree while the game runs.
+A `Node2D` that owns a `DigGrid` (`GRID_SIZE` = 8x8, `DIG_LIMIT` = 12) and spawns one Tile per cell in `_ready()`. The tiles exist only at runtime: the saved scene is just the root node, and you can see the tiles in the Remote scene tree while the game runs.
 
 - `cell_to_local(cell) -> Vector2`: `cell * Tile.SIZE`, in DigSite's local space.
 - `local_to_cell(pos) -> Vector2i`: the inverse, using `floor` so positions above or left of the grid give negative cells, which `is_in_bounds` rejects.
@@ -43,7 +46,7 @@ A `Node2D` that owns a `DigGrid` (`GRID_SIZE` = 8x8) and spawns one Tile per cel
 The helpers work in local space, not global, because DigSite is offset in Main. Moving DigSite doesn't affect them.
 
 ### Digging
-`_unhandled_input` takes left mouse **presses** (not releases, so a click can't be dragged onto another tile). It converts the click with `local_to_cell(make_input_local(event).position)` and calls `_try_dig(cell)`, which calls `set_dug()` on the tile only when `grid.dig(cell)` returns `true`.
+`_unhandled_input` takes left mouse **presses** (not releases, so a click can't be dragged onto another tile). It converts the click with `local_to_cell(make_input_local(event).position)` and calls `_try_dig(cell)`. When `grid.dig(cell)` returns `true`, `_try_dig` calls `set_dug()` on the tile, emits `digs_left_changed(digs_left)`, and emits `run_ended` if that was the last dig (see [run.md](run.md)). A failed dig emits nothing.
 
 - `make_input_local(event)` transforms the event's own position into DigSite space, including the viewport stretch. It's preferred over polling `get_local_mouse_position()` inside an input handler.
 - `_unhandled_input` runs after GUI, so any Control under the mouse with Mouse Filter = Stop takes the click and nothing gets dug. That's intended for blocking UI like the popup. Decorative Controls must be set to Ignore (see [architecture.md](architecture.md)).

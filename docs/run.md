@@ -1,0 +1,28 @@
+# Run
+
+A run is one attempt at the dig site: a fixed number of digs, then the run ends.
+
+## Dig limit
+`DigSite.DIG_LIMIT` (12) is passed to `DigGrid.new(width, height, dig_limit)`. `DigGrid` enforces it: `digs_left()` is `dig_limit - _dug.size()`, and `dig()` returns `false` at 0. Deriving the count from the dug cells means there's no second counter to keep in sync, and the rule can be tested without a scene (see [grid.md](grid.md)). `12` appears only in `DIG_LIMIT`. Everything else reads `digs_left()`.
+
+## Signals
+`DigSite` reports the run state and has no UI code of its own:
+
+| Signal | Emitted | Listener |
+|---|---|---|
+| `digs_left_changed(digs_left: int)` | After every successful dig, including the last | `Main._on_dig_site_digs_left_changed` |
+| `run_ended` | Right after the dig that brings `digs_left()` to 0 | `Main._on_dig_site_run_ended` |
+
+Both are emitted from `DigSite._try_dig`. Failed digs (already dug, off-grid, no digs left) emit nothing, so `run_ended` fires exactly once per run. The connections are made in the editor and stored in `main.tscn` (see the signals section in [architecture.md](architecture.md)).
+
+## Side-panel UI (`scripts/main.gd`)
+Main owns the side-panel labels and updates them from DigSite's signals:
+
+- `DigsLabel` at (340, 52): `"Digs left: %d"`. `_ready()` sets the initial text from `_dig_site.grid.digs_left()`. That works because Godot runs `_ready()` on children before their parent, so DigSite's grid already exists. The label's text in the scene is empty.
+- `RunOverLabel` at (340, 80): `"Out of digs"`, hidden in the scene and shown on `run_ended`.
+
+Labels default to Mouse Filter = Ignore, and the side panel (x 308–640) doesn't overlap the grid, so neither label affects clicks.
+
+## Later features
+- **Run-end summary (11):** listens to `run_ended`. It replaces or extends `RunOverLabel`.
+- **Restart (12):** needs a fresh `DigGrid` (which resets the dug cells and the count together), the tiles reset, and `RunOverLabel` hidden again.

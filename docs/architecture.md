@@ -34,10 +34,12 @@ No managers, autoload singletons, event buses or state machines until a feature 
 
 ## Scene tree (current)
 ```
-Main (Node2D)               scenes/main.tscn, main scene, scripts/main.gd (min window size)
+Main (Node2D)               scenes/main.tscn, main scene, scripts/main.gd (min window size, side-panel UI)
 ├── Background (ColorRect)  640x360, #3b2f2a placeholder, Mouse Filter = Ignore
-├── DigSite (Node2D)        scenes/dig_site.tscn, at (52, 52)
+├── DigSite (Node2D)        scenes/dig_site.tscn, at (52, 52); signals → Main
 │   └── Tile x64 (Node2D)   scenes/tile.tscn, spawned at runtime
-└── Title (Label)           placeholder, at (52, 16)
+├── Title (Label)           placeholder, at (52, 16)
+├── DigsLabel (Label)       at (340, 52), "Digs left: N", text set by main.gd
+└── RunOverLabel (Label)    at (340, 80), "Out of digs", hidden until run_ended
 ```
-Children draw in tree order, so Background must stay first. Screen layout: the grid takes x 52–308, and x 308–640 is reserved for the side panel (hint, dig counter). See [grid.md](grid.md).
+Children draw in tree order, so Background must stay first. Screen layout: the grid takes x 52–308, and x 308–640 is the side panel (dig counter, run-over message, and the hint later). See [grid.md](grid.md) and [run.md](run.md).

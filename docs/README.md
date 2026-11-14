@@ -8,6 +8,7 @@ How the game is built and why. Code is the source of truth. If a doc disagrees w
 | [architecture.md](architecture.md) | Folder layout, logic/rendering split, data-driven content, node communication |
 | [project-setup.md](project-setup.md) | Display, stretch and rendering settings and why they were chosen |
 | [grid.md](grid.md) | `DigGrid`, cell coordinates, tile rendering |
+| [run.md](run.md) | Dig limit, run-end signals, side-panel UI |
 
 New system, new doc: when a feature adds a system that needs explaining (artifacts, hints, run state), add a doc here and a row to this table.
 
