@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Artifact" format=3]
+
+[ext_resource type="Script" uid="uid://c672t7ojkx2e3" path="res://scripts/artifacts/artifact.gd" id="1_s8h5t"]
+
+[resource]
+script = ExtResource("1_s8h5t")
+name = "Bone Gaming Die"
+era = "Roman Empire, 1st century AD"
+blurb = "Romans loved dice, even though gambling for money was officially banned outside the Saturnalia festival. Hardly anyone cared. Emperor Augustus wrote to friends about his dice games, and archaeologists have even found loaded dice, weighted to cheat. Some things never change."
+metadata/_custom_type_script = "uid://c672t7ojkx2e3"

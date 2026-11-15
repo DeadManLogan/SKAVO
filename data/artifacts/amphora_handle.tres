@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Artifact" format=3]
+
+[ext_resource type="Script" uid="uid://c672t7ojkx2e3" path="res://scripts/artifacts/artifact.gd" id="1_s8h5t"]
+
+[resource]
+script = ExtResource("1_s8h5t")
+name = "Stamped Amphora Handle"
+era = "Roman Empire, 2nd century AD"
+blurb = "Amphorae were the shipping containers of the Roman world, carrying wine, olive oil and fish sauce across the Mediterranean. Potters stamped the handles, so we can trace a jar back to its workshop. In Rome there is an entire hill, Monte Testaccio, made of millions of broken oil amphorae. Nobody was getting their deposit back."
+metadata/_custom_type_script = "uid://c672t7ojkx2e3"

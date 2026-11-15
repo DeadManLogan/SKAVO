@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Artifact" format=3 uid="uid://1hsnsiqkaavj"]
+
+[ext_resource type="Script" uid="uid://c672t7ojkx2e3" path="res://scripts/artifacts/artifact.gd" id="1_s8h5t"]
+
+[resource]
+script = ExtResource("1_s8h5t")
+name = "Silver Denarius"
+era = "Roman Empire, 1st century AD"
+blurb = "Rome's everyday silver coin for over 400 years. Emperors stamped their faces and slogans on it, so every coin was a small piece of propaganda. Under Augustus, a legionary earned about 225 a year. Later emperors mixed in cheaper metals until little silver was left."
+metadata/_custom_type_script = "uid://c672t7ojkx2e3"

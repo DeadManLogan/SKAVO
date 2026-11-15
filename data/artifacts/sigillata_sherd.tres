@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Artifact" format=3]
+
+[ext_resource type="Script" uid="uid://c672t7ojkx2e3" path="res://scripts/artifacts/artifact.gd" id="1_s8h5t"]
+
+[resource]
+script = ExtResource("1_s8h5t")
+name = "Terra Sigillata Sherd"
+era = "Roman Empire, 1st century AD"
+blurb = "This glossy red fragment is terra sigillata, the Roman 'good plates'. It was made in huge workshops in Italy and Gaul and shipped across the empire. At La Graufesenque in France, a single kiln could fire around 30,000 pots at once, and the potters scratched their tally lists onto plates that still survive. Mass production, Roman style."
+metadata/_custom_type_script = "uid://c672t7ojkx2e3"

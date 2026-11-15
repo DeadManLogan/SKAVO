@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Artifact" format=3]
+
+[ext_resource type="Script" uid="uid://c672t7ojkx2e3" path="res://scripts/artifacts/artifact.gd" id="1_s8h5t"]
+
+[resource]
+script = ExtResource("1_s8h5t")
+name = "Lead Sling Bullet"
+era = "Late Republic, 1st century BC"
+blurb = "In trained hands a sling could kill at long range, and lead bullets like this were its ammunition. The Romans called them glandes, 'acorns'. Soldiers liked to cast messages into them. Some just say 'catch!', while bullets from the siege of Perusia in 41 BC carry insults so rude we won't translate them in class."
+metadata/_custom_type_script = "uid://c672t7ojkx2e3"

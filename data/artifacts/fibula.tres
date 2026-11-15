@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Artifact" format=3]
+
+[ext_resource type="Script" uid="uid://c672t7ojkx2e3" path="res://scripts/artifacts/artifact.gd" id="1_s8h5t"]
+
+[resource]
+script = ExtResource("1_s8h5t")
+name = "Bronze Fibula"
+era = "Roman Empire, 1st century AD"
+blurb = "Romans held their cloaks closed with a fibula, a bronze brooch that works exactly like a safety pin, just two thousand years early. Styles changed like fashion, which is great news for us: find the right brooch and you can date the whole layer. Some even carry the maker's name, Aucissa, like a designer label."
+metadata/_custom_type_script = "uid://c672t7ojkx2e3"

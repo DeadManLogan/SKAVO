@@ -118,8 +118,8 @@ scenes/main.tscn           + DigsLabel (340, 52), RunOverLabel (340, 80, hidden)
 **Goal:** Define an `Artifact` Resource (name, era, sprite, blurb), make the 10 Roman-era artifacts as `.tres` files in `data/artifacts/`, and add a loader that picks up every file in that folder. At F5, the Output panel lists the 10 loaded artifacts.
 
 **Tasks:**
-- [ ] 1. `scripts/artifacts/artifact.gd`: `Artifact` Resource with typed exports and `static func load_all()`. Check: "Artifact" appears in New Resource.
-- [ ] 2. Create the first artifact in the editor, with a temporary print in `Main._ready()`. Check: it's listed at F5.
+- [x] 1. `scripts/artifacts/artifact.gd`: `Artifact` Resource with typed exports and `static func load_all()`. Check: "Artifact" appears in New Resource.
+- [x] 2. Create the first artifact in the editor, with a temporary print in `Main._ready()`. Check: it's listed at F5.
 - [ ] 3. Add the other 9 `.tres` files. Check: 10 listed.
 - [ ] 4. Docs: `docs/artifacts.md` and a row in `docs/README.md`.
 
@@ -129,4 +129,5 @@ scenes/main.tscn           + DigsLabel (340, 52), RunOverLabel (340, 80, hidden)
 - `era` is a display `String`. `blurb` uses `@export_multiline` and stays at about 2–3 sentences. No `id` field, because the file path is unique.
 - An `Artifact` `.tres` is the definition of a kind of find, not a find in a run. `load()` caches, so every reference shares one instance. Per-run state (where it's buried, whether it's found) lives in the grid logic, never in the Resource.
 - New fields can be added later (for example rarity). Existing `.tres` files keep working and get the field's default value.
+- Blurb voice: an experienced archaeologist with a sense of humor, explaining the find to a class. Plain words, not technical: what the object is, how it was used, and one fun fact (like the legionary's pay of 225 denarii). Denarius blurb is the reference.
 - `sprite` stays empty until feature 10. Artifact sprites are made in the separate art repo and delivered as PNGs into `art/`. This repo produces no art.

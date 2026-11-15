@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Artifact" format=3]
+
+[ext_resource type="Script" uid="uid://c672t7ojkx2e3" path="res://scripts/artifacts/artifact.gd" id="1_s8h5t"]
+
+[resource]
+script = ExtResource("1_s8h5t")
+name = "Bronze Stylus"
+era = "Late Republic, 1st century BC"
+blurb = "The Roman notebook was a wooden tablet coated in wax, and this is the pen. The sharp end scratched letters into the wax, and the flat end smoothed them away again: the original delete key. Styluses were sharp, too. When Julius Caesar was attacked in the Senate, he stabbed one of his attackers in the arm with his."
+metadata/_custom_type_script = "uid://c672t7ojkx2e3"

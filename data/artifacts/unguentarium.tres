@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Artifact" format=3]
+
+[ext_resource type="Script" uid="uid://c672t7ojkx2e3" path="res://scripts/artifacts/artifact.gd" id="1_s8h5t"]
+
+[resource]
+script = ExtResource("1_s8h5t")
+name = "Glass Unguentarium"
+era = "Roman Empire, 1st century AD"
+blurb = "A little bottle for perfume, scented oil or medicine. Glassblowing was invented in the 1st century BC, and suddenly glass went from luxury to everyday. The rainbow shimmer is weathering from centuries underground. The Victorians called these 'tear bottles' and said mourners filled them with tears. Lovely story. Not true."
+metadata/_custom_type_script = "uid://c672t7ojkx2e3"

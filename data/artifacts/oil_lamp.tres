@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Artifact" format=3]
+
+[ext_resource type="Script" uid="uid://c672t7ojkx2e3" path="res://scripts/artifacts/artifact.gd" id="1_s8h5t"]
+
+[resource]
+script = ExtResource("1_s8h5t")
+name = "Terracotta Oil Lamp"
+era = "Roman Empire, 1st century AD"
+blurb = "Before electricity, this was the night shift. You filled it with olive oil, lit a wick in the nozzle and got about one candle's worth of light. Lamps were mass-produced in molds, often with the maker's name stamped underneath. One brand, FORTIS, sold so well that other workshops copied its stamp. Yes, Roman knock-offs."
+metadata/_custom_type_script = "uid://c672t7ojkx2e3"
