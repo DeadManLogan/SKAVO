@@ -4,7 +4,7 @@
 - [x] 2. Grid and dig-site scene
 - [x] 3. Tile digging (click to dig)
 - [x] 4. Dig limit and run-end state
-- [ ] 5. Artifact data definition (Resource) (in progress)
+- [x] 5. Artifact data definition (Resource)
 - [ ] 6. Artifact placement (random burial)
 - [ ] 7. Artifact discovery on dig
 - [ ] 8. Closest-artifact hint
@@ -114,20 +114,28 @@ scenes/main.tscn           + DigsLabel (340, 52), RunOverLabel (340, 80, hidden)
 - Later features: `_try_dig` is where a successful dig happens (discovery in 7, hint in 8). Side-panel labels start at x 340, with the counter at y 52 and the run-over message at y 80. Put the hint (8) below those.
 - Restart (12) needs a fresh `DigGrid` and tiles reset, plus `RunOverLabel` hidden again.
 
-### 5. Artifact data definition (Resource) (in progress)
-**Goal:** Define an `Artifact` Resource (name, era, sprite, blurb), make the 10 Roman-era artifacts as `.tres` files in `data/artifacts/`, and add a loader that picks up every file in that folder. At F5, the Output panel lists the 10 loaded artifacts.
+### 5. Artifact data definition (Resource)
+**Built:** an `Artifact` Resource and the 10 Roman-era artifacts as `.tres` files. At F5, the Output panel lists all 10 (name, era, `sprite: false`). There's no on-screen change.
 
-**Tasks:**
-- [x] 1. `scripts/artifacts/artifact.gd`: `Artifact` Resource with typed exports and `static func load_all()`. Check: "Artifact" appears in New Resource.
-- [x] 2. Create the first artifact in the editor, with a temporary print in `Main._ready()`. Check: it's listed at F5.
-- [ ] 3. Add the other 9 `.tres` files. Check: 10 listed.
-- [ ] 4. Docs: `docs/artifacts.md` and a row in `docs/README.md`.
+**Structure:**
+```
+scripts/artifacts/artifact.gd   Artifact (Resource): name, era, sprite: Texture2D, blurb (multiline); DIRECTORY; static load_all() -> Array[Artifact]
+data/artifacts/*.tres           10 artifacts: amphora_handle, denarius, fibula, gaming_die, oil_lamp,
+                                sigillata_sherd, sling_bullet, strigil, stylus, unguentarium
+scripts/main.gd                 + TEMP _print_artifacts() called from _ready()
+docs/artifacts.md, art-brief.md new
+```
 
-**Artifacts:** silver denarius, terracotta oil lamp, stamped amphora handle, bronze fibula, strigil, bronze stylus, terra sigillata sherd, lead sling bullet, glass unguentarium, bone gaming die.
+**Decisions:**
+- `load_all()` uses `ResourceLoader.list_directory()`, not `DirAccess`, so it keeps working in exports where `.tres` files are remapped. Results are sorted by file name, and anything that isn't an `Artifact` is skipped with a warning.
+- A `.tres` is the definition of a kind of find. `load()` caches, so all references share one instance, and per-run state (cell, found) never goes in the Resource.
+- `era` is a display `String`. There's no `id`, because the file path is unique. Fields added later load with their default value in existing files.
+- Blurb voice: a humorous archaeologist talking to a class, about 300 characters, covering what the object is, how it was used and one fun fact.
+- The art is made in a separate art repo from [art-brief.md](art-brief.md), one 32x32 PNG per artifact named the same as its `.tres`, placed in `art/artifacts/`. `sprite` stays `null` until feature 10.
+- Denarius was made in the editor. The other 9 were hand-written and have no `uid=` in their header yet. Godot adds one when each is saved in the editor, and nothing references them by UID.
 
-**Decisions so far:**
-- `era` is a display `String`. `blurb` uses `@export_multiline` and stays at about 2–3 sentences. No `id` field, because the file path is unique.
-- An `Artifact` `.tres` is the definition of a kind of find, not a find in a run. `load()` caches, so every reference shares one instance. Per-run state (where it's buried, whether it's found) lives in the grid logic, never in the Resource.
-- New fields can be added later (for example rarity). Existing `.tres` files keep working and get the field's default value.
-- Blurb voice: an experienced archaeologist with a sense of humor, explaining the find to a class. Plain words, not technical: what the object is, how it was used, and one fun fact (like the legionary's pay of 225 denarii). Denarius blurb is the reference.
-- `sprite` stays empty until feature 10. Artifact sprites are made in the separate art repo and delivered as PNGs into `art/`. This repo produces no art.
+**Next feature needs to know (6, artifact placement):**
+- `Artifact.load_all()` returns the 10 artifacts. Call it once per run and bury each in a random undug cell.
+- Burial positions are per-run state. Store them in the grid logic (`scripts/grid/`), for example as a `Dictionary[Vector2i, Artifact]` alongside `_dug`. Keep them out of the Resource.
+- Remove the TEMP `_print_artifacts()` from `main.gd` once placement uses `load_all()`.
+- The MVP has 10 artifacts on 64 cells with 12 digs. Placement must not assume the artifact count, because content will be added later.
