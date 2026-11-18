@@ -7,7 +7,7 @@ How the game is built and why. Code is the source of truth. If a doc disagrees w
 | [progress.md](progress.md) | Roadmap status, open questions, per-feature handoff notes |
 | [architecture.md](architecture.md) | Folder layout, logic/rendering split, data-driven content, node communication |
 | [project-setup.md](project-setup.md) | Display, stretch and rendering settings and why they were chosen |
-| [grid.md](grid.md) | `DigGrid`, cell coordinates, tile rendering |
+| [grid.md](grid.md) | `DigGrid`, cell coordinates, artifact burial, tile rendering, DigSite settings |
 | [run.md](run.md) | Dig limit, run-end signals, side-panel UI |
 | [artifacts.md](artifacts.md) | `Artifact` Resource, loading, adding an artifact, sprite pipeline, blurb voice |
 | [art-brief.md](art-brief.md) | Sprite specs and artifact list for the pixel-art agent (separate art repo) |

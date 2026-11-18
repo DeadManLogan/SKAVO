@@ -3,7 +3,7 @@
 A run is one attempt at the dig site: a fixed number of digs, then the run ends.
 
 ## Dig limit
-`DigSite.DIG_LIMIT` (12) is passed to `DigGrid.new(width, height, dig_limit)`. `DigGrid` enforces it: `digs_left()` is `dig_limit - _dug.size()`, and `dig()` returns `false` at 0. Deriving the count from the dug cells means there's no second counter to keep in sync, and the rule can be tested without a scene (see [grid.md](grid.md)). `12` appears only in `DIG_LIMIT`. Everything else reads `digs_left()`.
+`DigSite.dig_limit` (`@export`, default 12) is passed to `DigGrid.new(width, height, dig_limit)`. `DigGrid` enforces it: `digs_left()` is `dig_limit - _dug.size()`, and `dig()` returns `false` at 0. Deriving the count from the dug cells means there's no second counter to keep in sync, and the rule can be tested without a scene (see [grid.md](grid.md)). `12` appears only as the default of `dig_limit`. Everything else reads `digs_left()`. To test with more digs, change **Dig Limit** on DigSite in `main.tscn`.
 
 ## Signals
 `DigSite` reports the run state and has no UI code of its own:
@@ -24,8 +24,8 @@ Main owns the side-panel labels and updates them from DigSite's signals:
 Labels default to Mouse Filter = Ignore, and the side panel (x 308–640) doesn't overlap the grid, so neither label affects clicks.
 
 ## Balance
-Two numbers set how generous a run is: `DIG_LIMIT` (12) and the number of artifacts buried per run (10, on 64 cells). Digging at random finds 12 × 10/64 ≈ 1.9 artifacts per run. The closest-artifact hint (feature 8) should push that to roughly 4–6, which is the target: every run finds something, and clearing the site is rare. Both numbers stay as they are for the MVP. Tune them by playtesting once the hint works, not before, because the hint's distance metric changes how much each miss tells you.
+Two numbers set how generous a run is: `DigSite.dig_limit` (12) and `DigSite.artifacts_per_run` (10, on 64 cells). Both are `@export`, so they can be tuned in the Inspector. Digging at random finds 12 × 10/64 ≈ 1.9 artifacts per run. The closest-artifact hint (feature 8) should push that to roughly 4–6, which is the target: every run finds something, and clearing the site is rare. Both numbers stay as they are for the MVP. Tune them by playtesting once the hint works, not before, because the hint's distance metric changes how much each miss tells you.
 
 ## Later features
-- **Run-end summary (11):** listens to `run_ended`. It replaces or extends `RunOverLabel`.
-- **Restart (12):** needs a fresh `DigGrid` (which resets the dug cells and the count together), the tiles reset, and `RunOverLabel` hidden again.
+- **Run-end summary (11):** listens to `run_ended`. It replaces or extends `RunOverLabel`. Burials can contain duplicates, so it has to decide whether it counts finds or different kinds found.
+- **Restart (12):** needs a fresh `DigGrid` (which resets the dug cells, the count and the burials together) followed by a new `bury()`, the tiles reset, and `RunOverLabel` hidden again.

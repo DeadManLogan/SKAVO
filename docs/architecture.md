@@ -30,6 +30,9 @@ Connections are made in the editor (Node dock → Signals) and saved in the pare
 ### Input: game clicks go through `_unhandled_input`
 Godot delivers input in order: `_input`, then GUI (Controls), then `_unhandled_input`. Game clicks (digging) are read in `_unhandled_input`, so any Control under the mouse with **Mouse → Filter = Stop** (the default for `ColorRect`, `Panel`, `Button`) swallows the click first. That's what we want for real UI like the found-artifact popup, which then blocks digging with no extra code. Decorative Controls that cover the grid or the screen (like `Background`) must be set to **Filter = Ignore**, or clicks never reach the game.
 
+### Tuning values are exported
+Gameplay numbers that are worth tweaking while testing (digs per run, artifacts per run) are `@export` vars on the node that owns them, so they can be changed in the Inspector without editing code. Values that never change, or that other code depends on (`Tile.SIZE`, `GRID_SIZE` while the layout assumes 256 px), stay `const`. Logic classes in `scripts/grid/` never hard-code these values. They receive them through constructor or method arguments.
+
 ### Simplest thing that works
 No managers, autoload singletons, event buses or state machines until a feature actually needs one. Each feature adds only what it needs.
 

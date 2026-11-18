@@ -5,7 +5,7 @@
 - [x] 3. Tile digging (click to dig)
 - [x] 4. Dig limit and run-end state
 - [x] 5. Artifact data definition (Resource)
-- [ ] 6. Artifact placement (random burial) (in progress)
+- [x] 6. Artifact placement (random burial)
 - [ ] 7. Artifact discovery on dig
 - [ ] 8. Closest-artifact hint
 - [ ] 9. Found-artifact popup
@@ -140,17 +140,30 @@ docs/artifacts.md, art-brief.md new
 - Remove the TEMP `_print_artifacts()` from `main.gd` once placement uses `load_all()`.
 - The MVP has 10 artifacts on 64 cells with 12 digs. Placement must not assume the artifact count, because content will be added later.
 
-### 6. Artifact placement (random burial) (in progress)
-**Goal:** At the start of each run, bury artifacts in random cells and store the positions in `DigGrid` as per-run state. Nothing changes on screen. F5 prints an 8x8 burial map to the Output panel, different on every run.
+### 6. Artifact placement (random burial)
+**Built:** Each run buries 10 artifacts in 10 different random cells. Each cell gets an independent random pick, so duplicates can happen. Nothing changes on screen. F5 prints a TEMP burial map (`X`/`.` grid plus `(x, y) name` lines) to the Output panel. Digs per run and artifacts per run can be set in the Inspector on DigSite in `main.tscn`.
 
-**Tasks:**
-- [x] 1. `DigGrid`: `_buried: Dictionary[Vector2i, Artifact]`, `bury(artifacts, count)`, `artifact_at(cell)`
-- [x] 2. `DigSite` buries at run start from `Artifact.load_all()`. `dig_limit` and `artifacts_per_run` become `@export` vars. Remove TEMP `_print_artifacts()` from `main.gd`, add TEMP `_print_burial_map()`.
-- [ ] 3. Docs: `grid.md`, `artifacts.md`, `run.md`
+**Structure:**
+```
+scripts/grid/dig_grid.gd   + _buried: Dictionary[Vector2i, Artifact], bury(artifacts, count), artifact_at(cell), _undug_cells()
+scripts/dig_site.gd        DIG_LIMIT const -> @export dig_limit (12); + @export artifacts_per_run (10);
+                           _ready() buries Artifact.load_all(); + TEMP _print_burial_map()
+scripts/main.gd            - TEMP _print_artifacts()
+.claude/skills/start-feature/SKILL.md   + rule: export tuning values
+```
+No scene changes.
 
-**Decisions so far:**
-- Duplicates are allowed: each buried cell gets a random pick from the full pool (`pick_random()`), so the same artifact can appear more than once per run. Cells are distinct: `shuffle()` all cells and take the first `count`.
-- 10 artifacts per run and 12 digs stay for the MVP. Tune them after the hint (feature 8). See [run.md](run.md#balance).
-- Global RNG, no seed.
-- `bury()` is separate from `_init`, so a grid can exist without artifacts.
-- The TEMP burial map print stays through features 7 and 8 for testing.
+**Decisions:**
+- Duplicates allowed (`pick_random()` per cell): a design choice, and weighted picks for rarity later only change `bury()`.
+- Distinct cells via `shuffle()` + first `count`: no retry loop.
+- `count` is an argument, so `DigGrid` doesn't assume the pool size. Too many → bury what fits and `push_warning()`.
+- Global RNG, no seed. `bury()` is separate from `_init`.
+- Tuning values are `@export` on DigSite. `GRID_SIZE` stays `const` because the layout assumes a 256 px grid.
+- Balance (12 digs, 10 artifacts) stays for the MVP, to be tuned after feature 8. See [run.md](run.md#balance).
+
+**Next feature needs to know (7, artifact discovery):**
+- After `grid.dig(cell)` returns `true` in `DigSite._try_dig`, `grid.artifact_at(cell)` tells you what was found (`null` for nothing).
+- "Found" can be derived: a buried cell that's also dug. No separate found set is needed, the same way `digs_left()` comes from `_dug`. Feature 8's "unfound artifacts" are the buried cells that aren't dug.
+- Emit a signal (for example `artifact_found(artifact, cell)`) for the popup in feature 9. Main or a temporary label can show it until then.
+- The TEMP `_print_burial_map()` stays until feature 8 is done. Use it to find artifacts to dig while testing.
+- Bump **Dig Limit** in the Inspector to test more finds per run.

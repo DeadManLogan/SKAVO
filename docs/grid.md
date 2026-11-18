@@ -13,6 +13,8 @@ grid.dig(Vector2i(0, 0))           # true
 grid.dig(Vector2i(0, 0))           # false, already dug
 grid.is_dug(Vector2i(0, 0))        # true
 grid.digs_left()                   # 11
+grid.bury(Artifact.load_all(), 10) # 10 random undug cells, each with a random artifact
+grid.artifact_at(Vector2i(3, 5))   # an Artifact, or null
 ```
 
 - `width`, `height`: grid size in cells.
@@ -22,7 +24,21 @@ grid.digs_left()                   # 11
 - `digs_left() -> int`: `dig_limit - _dug.size()`. Every dug cell used exactly one dig, so there's no separate counter.
 - `dig(cell) -> bool`: marks the cell dug. It returns `false` and changes nothing if no digs are left or the cell is out of bounds or already dug, so callers only react to real digs, and off-grid clicks need no separate check.
 
-Dug cells are stored in `_dug: Dictionary[Vector2i, bool]`, used as a set: a cell is dug if it's a key. It's keyed by the same `Vector2i` used everywhere else, and artifact positions can be stored the same way. `DigGrid` is the source of truth for dug state. `class_name` registers it globally, so no `preload` is needed.
+- `bury(artifacts: Array[Artifact], count: int)`: buries artifacts at run start. See [Burial](#burial).
+- `artifact_at(cell) -> Artifact`: the artifact buried in that cell, or `null`.
+
+Dug cells are stored in `_dug: Dictionary[Vector2i, bool]`, used as a set: a cell is dug if it's a key. Burials are stored in `_buried: Dictionary[Vector2i, Artifact]`, keyed by the same `Vector2i`. `DigGrid` is the source of truth for dug state and burials. `class_name` registers it globally, so no `preload` is needed.
+
+### Burial
+`bury()` lists the undug cells, shuffles them with `Array.shuffle()`, and puts an artifact in each of the first `count` cells. Each cell gets its own `artifacts.pick_random()` from the full pool, so the same artifact can be buried in several cells. Every pick has an equal chance for each artifact in the pool.
+
+- Cells are distinct: one artifact per cell at most. Shuffling and taking the first `count` never needs a retry, unlike picking random cells until a free one turns up.
+- Duplicates are a design choice: a run of 10 picks from a pool of 10 averages about 6.5 different kinds. Rarity tiers (post-MVP) would replace `pick_random()` with a weighted pick, and nothing outside `bury()` changes.
+- `count` is a parameter, not a `DigGrid` field. The caller decides how many artifacts a run gets, and the grid logic doesn't assume the pool size.
+- If `count` is more than the free cells, it buries as many as fit and calls `push_warning()`. An empty pool buries nothing, also with a warning. Warnings show in the Debugger → Errors tab.
+- It uses the global RNG, which Godot 4 seeds randomly at startup, so every run differs. No seed is passed in, because nothing needs reproducible layouts yet.
+- It's separate from `_init`, so a grid can be created without artifacts.
+- The `.tres` resources are shared instances (see [artifacts.md](artifacts.md)). `_buried` only holds references to them, and run state like "found" is never written into them.
 
 ## Tile (`scripts/tile.gd`, `scenes/tile.tscn`)
 A `Node2D` that draws one `SIZE` x `SIZE` (32x32) square in `_draw()`, from its origin to (32, 32). The node's position is the tile's top-left corner.
@@ -37,7 +53,19 @@ A `Node2D` that draws one `SIZE` x `SIZE` (32x32) square in `_draw()`, from its 
 `Tile.SIZE` is the single source of truth for tile size.
 
 ## DigSite (`scripts/dig_site.gd`, `scenes/dig_site.tscn`)
-A `Node2D` that owns a `DigGrid` (`GRID_SIZE` = 8x8, `DIG_LIMIT` = 12) and spawns one Tile per cell in `_ready()`. The tiles exist only at runtime: the saved scene is just the root node, and you can see the tiles in the Remote scene tree while the game runs.
+A `Node2D` that owns a `DigGrid` and spawns one Tile per cell in `_ready()`. The tiles exist only at runtime: the saved scene is just the root node, and you can see the tiles in the Remote scene tree while the game runs.
+
+`_ready()` creates the grid, buries `Artifact.load_all()` with `artifacts_per_run`, spawns the tiles and prints the burial map.
+
+| Setting | Kind | Default | Why |
+|---|---|---|---|
+| `dig_limit` | `@export` | 12 | Tuning, change it in the Inspector to test. See [run.md](run.md). |
+| `artifacts_per_run` | `@export` | 10 | Tuning, see [run.md](run.md#balance). |
+| `GRID_SIZE` | `const` | 8x8 | The layout in `main.tscn` (grid position, side panel at x 308) assumes a 256 px grid, so changing it isn't a simple tweak. |
+
+To change an exported value, select **DigSite** in `main.tscn` and edit it in the Inspector. The value is saved as an override in `main.tscn`, the script keeps the default, and the revert arrow restores it. Exported values are applied before `_ready()`, so the grid uses the Inspector value.
+
+**TEMP:** `_print_burial_map()` prints the grid as `X` (buried) and `.` to the Output panel, then one `(x, y) name` line per buried cell. It's there to test discovery (feature 7) and the hint (feature 8), and gets removed after feature 8.
 
 - `cell_to_local(cell) -> Vector2`: `cell * Tile.SIZE`, in DigSite's local space.
 - `local_to_cell(pos) -> Vector2i`: the inverse, using `floor` so positions above or left of the grid give negative cells, which `is_in_bounds` rejects.

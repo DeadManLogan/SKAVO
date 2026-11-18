@@ -22,6 +22,8 @@ It reads the folder with `ResourceLoader.list_directory()` rather than `DirAcces
 ## A definition, not a find
 A `.tres` describes a kind of find. It isn't the find in a particular run. `load()` caches resources, so every reference to `denarius.tres` is the same shared object. Per-run state, such as which cell it's buried in or whether it's been found, belongs in the grid logic and is never written into the Resource. Otherwise it would leak into the next run.
 
+Each run, `DigSite` passes `Artifact.load_all()` to `DigGrid.bury()`, which buries `artifacts_per_run` (10) random picks from the pool. Duplicates are allowed, so the same `denarius.tres` instance can be buried in two cells. That's safe because `DigGrid._buried` only maps cells to these shared instances. See [Burial in grid.md](grid.md#burial).
+
 ## Adding an artifact
 1. In the FileSystem dock, right-click `data/artifacts/` → **Create New → Resource… → Artifact**. Name the file in `snake_case`, the same as its PNG, for example `oil_lamp.tres` ↔ `oil_lamp.png`.
 2. Fill in the fields in the Inspector, then save with the Inspector's save icon. Ctrl+S saves the open scene, not always a resource you're editing on its own.
