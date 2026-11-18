@@ -23,6 +23,9 @@ Main owns the side-panel labels and updates them from DigSite's signals:
 
 Labels default to Mouse Filter = Ignore, and the side panel (x 308–640) doesn't overlap the grid, so neither label affects clicks.
 
+## Balance
+Two numbers set how generous a run is: `DIG_LIMIT` (12) and the number of artifacts buried per run (10, on 64 cells). Digging at random finds 12 × 10/64 ≈ 1.9 artifacts per run. The closest-artifact hint (feature 8) should push that to roughly 4–6, which is the target: every run finds something, and clearing the site is rare. Both numbers stay as they are for the MVP. Tune them by playtesting once the hint works, not before, because the hint's distance metric changes how much each miss tells you.
+
 ## Later features
 - **Run-end summary (11):** listens to `run_ended`. It replaces or extends `RunOverLabel`.
 - **Restart (12):** needs a fresh `DigGrid` (which resets the dug cells and the count together), the tiles reset, and `RunOverLabel` hidden again.

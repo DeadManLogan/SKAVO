@@ -27,6 +27,14 @@ Consequence of `viewport` mode: the default font and any UI text are also render
 ## Grid sizing
 Tiles are 32x32 px, so the 8x8 grid is 256x256 px. That leaves 360 - 256 = 104 px of vertical room and 384 px of horizontal room in the viewport for the hint, dig counter and title. 32 px is big enough for artifact sprites to read clearly.
 
+## Art scale
+All art is drawn at the viewport's pixel size and shown at 1x: one art pixel is one viewport pixel. Nothing is scaled by a different factor from the rest, so every pixel on screen is the same size, and there are no mixed pixel sizes ("mixels"). The viewport size sets how big each piece of art can be:
+- **Tiles: 32x32.** Eight tiles plus margins and the title have to fit in 360 px. 40 px would leave 40 px for all of that, and 48 px doesn't fit at all.
+- **UI:** a pixel font used at its native size (or a whole-number multiple of it), with panels and buttons drawn at 1x.
+- **Artifacts:** see [art-brief.md](art-brief.md).
+
+**What's expensive to change.** Pixel art can't be resampled, so any change in size means redrawing the art. In code, the tile size is the one constant `Tile.SIZE`, but layout positions (the grid's offset, the side panel, the labels) are in viewport pixels and have to be redone. The viewport size is a single setting, but changing it changes the size of everything on screen, and 640x360 is the largest 16:9 size that scales by a whole number to 720p, 1080p, 1440p and 4K. For example, 1280x720 shows at 1x on a 1080p screen, with wide borders around it.
+
 ## Git
 - `.gitignore` excludes `.godot/` (the editor's import cache, rebuilt automatically).
 - `.gitattributes` normalizes text files to LF.

@@ -5,7 +5,7 @@
 - [x] 3. Tile digging (click to dig)
 - [x] 4. Dig limit and run-end state
 - [x] 5. Artifact data definition (Resource)
-- [ ] 6. Artifact placement (random burial)
+- [ ] 6. Artifact placement (random burial) (in progress)
 - [ ] 7. Artifact discovery on dig
 - [ ] 8. Closest-artifact hint
 - [ ] 9. Found-artifact popup
@@ -14,7 +14,7 @@
 - [ ] 12. Restart / new run
 
 ## Open questions
-None.
+- Artifact sprite size: 32x32 or 64x64 (shown at 1x or 2x in the popup). Decide before the art pass (feature 10). Terrain tiles stay 32x32.
 
 ## Handoff notes (newest last)
 
@@ -139,3 +139,18 @@ docs/artifacts.md, art-brief.md new
 - Burial positions are per-run state. Store them in the grid logic (`scripts/grid/`), for example as a `Dictionary[Vector2i, Artifact]` alongside `_dug`. Keep them out of the Resource.
 - Remove the TEMP `_print_artifacts()` from `main.gd` once placement uses `load_all()`.
 - The MVP has 10 artifacts on 64 cells with 12 digs. Placement must not assume the artifact count, because content will be added later.
+
+### 6. Artifact placement (random burial) (in progress)
+**Goal:** At the start of each run, bury artifacts in random cells and store the positions in `DigGrid` as per-run state. Nothing changes on screen. F5 prints an 8x8 burial map to the Output panel, different on every run.
+
+**Tasks:**
+- [x] 1. `DigGrid`: `_buried: Dictionary[Vector2i, Artifact]`, `bury(artifacts, count)`, `artifact_at(cell)`
+- [x] 2. `DigSite` buries at run start from `Artifact.load_all()`. `dig_limit` and `artifacts_per_run` become `@export` vars. Remove TEMP `_print_artifacts()` from `main.gd`, add TEMP `_print_burial_map()`.
+- [ ] 3. Docs: `grid.md`, `artifacts.md`, `run.md`
+
+**Decisions so far:**
+- Duplicates are allowed: each buried cell gets a random pick from the full pool (`pick_random()`), so the same artifact can appear more than once per run. Cells are distinct: `shuffle()` all cells and take the first `count`.
+- 10 artifacts per run and 12 digs stay for the MVP. Tune them after the hint (feature 8). See [run.md](run.md#balance).
+- Global RNG, no seed.
+- `bury()` is separate from `_init`, so a grid can exist without artifacts.
+- The TEMP burial map print stays through features 7 and 8 for testing.

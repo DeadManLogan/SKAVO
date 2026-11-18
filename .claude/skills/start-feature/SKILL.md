@@ -20,4 +20,6 @@ description: Start (or resume) a roadmap feature for SKAVO. Use when the user sa
 
 Then do one task per turn: write the `.gd` files, give exact editor steps for scenes, signals and settings, say how to verify it, and wait for "next". Tick each finished task off in `docs/progress.md`.
 
+Make tuning values easy to change for testing: digs per run, artifacts per run, grid size, and similar gameplay numbers go in `@export` vars on the node that owns them, so the user can change them in the Inspector without editing code. Only do this for values someone would actually tweak. Use a `const` for values that never change, like `Tile.SIZE`. The logic classes in `scripts/grid/` get these values passed in through their constructor or method arguments, never hard-coded.
+
 Scope guard: if a task drifts into a later roadmap feature or something out of MVP scope, say so and ask before doing it.
