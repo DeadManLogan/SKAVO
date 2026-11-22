@@ -10,16 +10,18 @@ A run is one attempt at the dig site: a fixed number of digs, then the run ends.
 
 | Signal | Emitted | Listener |
 |---|---|---|
+| `artifact_found(artifact: Artifact, cell: Vector2i)` | After a successful dig on a cell with a buried artifact | `Main._on_dig_site_artifact_found` |
 | `digs_left_changed(digs_left: int)` | After every successful dig, including the last | `Main._on_dig_site_digs_left_changed` |
 | `run_ended` | Right after the dig that brings `digs_left()` to 0 | `Main._on_dig_site_run_ended` |
 
-Both are emitted from `DigSite._try_dig`. Failed digs (already dug, off-grid, no digs left) emit nothing, so `run_ended` fires exactly once per run. The connections are made in the editor and stored in `main.tscn` (see the signals section in [architecture.md](architecture.md)).
+All three are emitted from `DigSite._try_dig`, in the order of the table. `artifact_found` comes first, so a find on the last dig reaches its listeners before `run_ended` does. That matters for the popup (feature 9) and the summary (feature 11). Failed digs (already dug, off-grid, no digs left) emit nothing, so `run_ended` fires exactly once per run. The connections are made in the editor and stored in `main.tscn` (see the signals section in [architecture.md](architecture.md)).
 
 ## Side-panel UI (`scripts/main.gd`)
 Main owns the side-panel labels and updates them from DigSite's signals:
 
 - `DigsLabel` at (340, 52): `"Digs left: %d"`. `_ready()` sets the initial text from `_dig_site.grid.digs_left()`. That works because Godot runs `_ready()` on children before their parent, so DigSite's grid already exists. The label's text in the scene is empty.
 - `RunOverLabel` at (340, 80): `"Out of digs"`, hidden in the scene and shown on `run_ended`.
+- `FoundLabel` at (340, 108), **TEMP**: `"Found: <name>"` for the latest find, set on `artifact_found`. It's empty in the scene, so nothing shows before the first find. Feature 9's popup replaces it. Remove the node and the `_found_label` code in the same step, because `$FoundLabel` fails at load if the node is gone and the code isn't.
 
 Labels default to Mouse Filter = Ignore, and the side panel (x 308–640) doesn't overlap the grid, so neither label affects clicks.
 

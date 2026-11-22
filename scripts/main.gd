@@ -3,6 +3,8 @@ extends Node2D
 @onready var _dig_site: DigSite = $DigSite
 @onready var _digs_label: Label = $DigsLabel
 @onready var _run_over_label: Label = $RunOverLabel
+# TEMP (feature 7): shows the latest find until the popup (feature 9) replaces it.
+@onready var _found_label: Label = $FoundLabel
 
 
 func _ready() -> void:
@@ -19,6 +21,10 @@ func _on_dig_site_digs_left_changed(digs_left: int) -> void:
 
 func _on_dig_site_run_ended() -> void:
 	_run_over_label.show()
+
+
+func _on_dig_site_artifact_found(artifact: Artifact, _cell: Vector2i) -> void:
+	_found_label.text = "Found: %s" % artifact.name
 
 
 func _show_digs_left(digs_left: int) -> void:

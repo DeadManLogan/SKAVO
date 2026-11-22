@@ -3,6 +3,7 @@ extends Node2D
 
 signal digs_left_changed(digs_left: int)
 signal run_ended
+signal artifact_found(artifact: Artifact, cell: Vector2i)
 
 # The side-panel layout in main.tscn assumes a 256 px grid, so this isn't exported yet.
 const GRID_SIZE := Vector2i(8, 8)
@@ -44,7 +45,11 @@ func local_to_cell(local_pos: Vector2) -> Vector2i:
 func _try_dig(cell: Vector2i) -> void:
 	if not grid.dig(cell):
 		return
-	_tiles[cell].set_dug()
+	var artifact := grid.artifact_at(cell)
+	_tiles[cell].set_dug(artifact != null)
+	# Emitted before run_ended, so a find on the last dig is reported while the run is still on.
+	if artifact:
+		artifact_found.emit(artifact, cell)
 	digs_left_changed.emit(grid.digs_left())
 	if grid.digs_left() == 0:
 		run_ended.emit()

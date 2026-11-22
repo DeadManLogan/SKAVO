@@ -6,7 +6,7 @@
 - [x] 4. Dig limit and run-end state
 - [x] 5. Artifact data definition (Resource)
 - [x] 6. Artifact placement (random burial)
-- [ ] 7. Artifact discovery on dig
+- [x] 7. Artifact discovery on dig
 - [ ] 8. Closest-artifact hint
 - [ ] 9. Found-artifact popup
 - [ ] 10. Placeholder-to-final art pass
@@ -167,3 +167,27 @@ No scene changes.
 - Emit a signal (for example `artifact_found(artifact, cell)`) for the popup in feature 9. Main or a temporary label can show it until then.
 - The TEMP `_print_burial_map()` stays until feature 8 is done. Use it to find artifacts to dig while testing.
 - Bump **Dig Limit** in the Inspector to test more finds per run.
+
+### 7. Artifact discovery on dig
+**Built:** Digging a cell with a buried artifact shows a gold square in the middle of the dug tile, and the side panel shows `Found: <name>` for the latest find. Empty digs look the same as before.
+
+**Structure:**
+```
+scripts/dig_site.gd   + signal artifact_found(artifact: Artifact, cell: Vector2i), emitted in _try_dig
+scripts/tile.gd       set_dug() -> set_dug(has_find: bool); + find_color (@export), MARKER_SIZE, _has_find
+scripts/main.gd       + TEMP _found_label, _on_dig_site_artifact_found()
+scenes/main.tscn      + FoundLabel (340, 108), empty text; artifact_found connected to Main
+```
+
+**Decisions:**
+- `DigGrid` didn't change. A find is a cell that's both buried and dug, so there's no found set to keep in sync.
+- Signal order in `_try_dig`: `artifact_found`, then `digs_left_changed`, then `run_ended`. A find on the last dig is reported before the run ends.
+- The tile marker is a generic gold square, not the artifact's sprite. Current lean for feature 10: a generic "find" frame in the terrain strip (see [grid.md](grid.md#art-plan-feature-10)).
+- `FoundLabel` is TEMP, because a visible label is more useful for testing than an Output print.
+
+**Next feature needs to know (8, closest-artifact hint):**
+- Unfound artifacts are the keys of `DigGrid._buried` that aren't in `_dug`. The distance calculation belongs in `DigGrid`.
+- Compute the hint after each successful dig in `_try_dig`. Emit it the same way as `digs_left_changed`. The hint label goes in the side panel below `FoundLabel` (y 108), for example at y 136.
+- Once every artifact is found, there's no closest one. Decide what the hint shows then.
+- Remove the TEMP `_print_burial_map()` at the end of feature 8.
+- Feature 9 (popup): it listens to `artifact_found`. Remove the `FoundLabel` node and `_found_label` / its handler code in the same step. If only one of them is removed, either `$FoundLabel` fails at load or an orphan label stays.

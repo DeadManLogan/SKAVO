@@ -46,7 +46,8 @@ A `Node2D` that draws one `SIZE` x `SIZE` (32x32) square in `_draw()`, from its 
 - `base_color` (`@export`, default `#a0805a`): placeholder dirt color, editable in the Inspector.
 - `dug_color` (`@export`, default `#4a3628`): placeholder hole color. It's flat, with no shade variation, so neighboring dug tiles read as one pit.
 - In `_ready()` it scales the dirt color's HSV value by a random factor within ±`SHADE_VARIATION` (8%), so neighboring tiles are distinguishable without outlines. It changes `v` rather than multiplying the whole `Color`, because multiplying would also change alpha.
-- `set_dug()`: sets `_is_dug` and calls `queue_redraw()`. `_draw()` picks the dirt or dug color at draw time, so `set_dug()` works even when it's called before `_ready()`. `_is_dug` only controls the look. `DigGrid` holds the real state.
+- `find_color` (`@export`, default `#e0b040`): placeholder marker for a find, a `MARKER_SIZE` (12 px) square centered on the dug tile.
+- `set_dug(has_find: bool)`: sets `_is_dug` and `_has_find`, then calls `queue_redraw()`. `_draw()` picks the dirt or dug color and adds the marker at draw time, so `set_dug()` works even when it's called before `_ready()`. These flags only control the look. `DigGrid` holds the real state.
 - `_draw()` only runs once per redraw. Any later visual change needs `queue_redraw()`.
 - It doesn't draw in the 2D editor view (that would need `@tool`). Use F6 to see it.
 
@@ -74,7 +75,9 @@ To change an exported value, select **DigSite** in `main.tscn` and edit it in th
 The helpers work in local space, not global, because DigSite is offset in Main. Moving DigSite doesn't affect them.
 
 ### Digging
-`_unhandled_input` takes left mouse **presses** (not releases, so a click can't be dragged onto another tile). It converts the click with `local_to_cell(make_input_local(event).position)` and calls `_try_dig(cell)`. When `grid.dig(cell)` returns `true`, `_try_dig` calls `set_dug()` on the tile, emits `digs_left_changed(digs_left)`, and emits `run_ended` if that was the last dig (see [run.md](run.md)). A failed dig emits nothing.
+`_unhandled_input` takes left mouse **presses** (not releases, so a click can't be dragged onto another tile). It converts the click with `local_to_cell(make_input_local(event).position)` and calls `_try_dig(cell)`. When `grid.dig(cell)` returns `true`, `_try_dig` looks up `grid.artifact_at(cell)` and calls `set_dug(artifact != null)` on the tile. It emits `artifact_found(artifact, cell)` if there was one, then `digs_left_changed(digs_left)`, then `run_ended` if that was the last dig (see [run.md](run.md) for why that order). A failed dig emits nothing.
+
+A find isn't stored anywhere: it's a cell that's both buried and dug, the same way `digs_left()` is derived from `_dug`. Unfound artifacts are the buried cells that aren't dug.
 
 - `make_input_local(event)` transforms the event's own position into DigSite space, including the viewport stretch. It's preferred over polling `get_local_mouse_position()` inside an input handler.
 - `_unhandled_input` runs after GUI, so any Control under the mouse with Mouse Filter = Stop takes the click and nothing gets dug. That's intended for blocking UI like the popup. Decorative Controls must be set to Ignore (see [architecture.md](architecture.md)).
@@ -97,3 +100,5 @@ The MVP needs per-tile effects and has 64 tiles, so nodes win. **Reconsider only
 
 ## Art plan (feature 10)
 The `_draw()` square is a placeholder. In the art pass, the Tile scene gets a `Sprite2D` child that uses one sprite sheet PNG: a horizontal strip of 32x32 frames (a few undug dirt variants plus a dug frame). Set `hframes` to the frame count and choose a variant with `frame`, which replaces the random shade. From Aseprite: **File → Export Sprite Sheet**, sheet type "Horizontal Strip", no padding.
+
+The gold find marker (feature 7) is a placeholder too. The current lean is a generic "find" frame in the terrain strip, rather than the found artifact's own sprite on the tile. A generic frame keeps the grid to one sprite sheet, and the popup (feature 9) is where the artifact itself is shown. Drawing the artifact's sprite on the tile is still an option, and it would depend on the open sprite-size question in [progress.md](progress.md). Confirm in feature 10.

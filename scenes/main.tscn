@@ -36,5 +36,12 @@ offset_right = 425.0
 offset_bottom = 103.0
 text = "Out of digs"
 
+[node name="FoundLabel" type="Label" parent="." unique_id=1101813970]
+offset_left = 340.0
+offset_top = 108.0
+offset_right = 380.0
+offset_bottom = 131.0
+
+[connection signal="artifact_found" from="DigSite" to="." method="_on_dig_site_artifact_found"]
 [connection signal="digs_left_changed" from="DigSite" to="." method="_on_dig_site_digs_left_changed"]
 [connection signal="run_ended" from="DigSite" to="." method="_on_dig_site_run_ended"]
