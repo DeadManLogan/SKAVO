@@ -12,9 +12,10 @@ A run is one attempt at the dig site: a fixed number of digs, then the run ends.
 |---|---|---|
 | `artifact_found(artifact: Artifact, cell: Vector2i)` | After a successful dig on a cell with a buried artifact | `Main._on_dig_site_artifact_found` |
 | `digs_left_changed(digs_left: int)` | After every successful dig, including the last | `Main._on_dig_site_digs_left_changed` |
+| `hint_changed(distance: int)` | After every successful dig, including the last. `distance` is from the dug cell to the closest unfound artifact, or `DigGrid.NO_ARTIFACT` (-1) | `Main._on_dig_site_hint_changed` |
 | `run_ended` | Right after the dig that brings `digs_left()` to 0 | `Main._on_dig_site_run_ended` |
 
-All three are emitted from `DigSite._try_dig`, in the order of the table. `artifact_found` comes first, so a find on the last dig reaches its listeners before `run_ended` does. That matters for the popup (feature 9) and the summary (feature 11). Failed digs (already dug, off-grid, no digs left) emit nothing, so `run_ended` fires exactly once per run. The connections are made in the editor and stored in `main.tscn` (see the signals section in [architecture.md](architecture.md)).
+All four are emitted from `DigSite._try_dig`, in the order of the table. `artifact_found` comes first, so a find on the last dig reaches its listeners before `run_ended` does. That matters for the popup (feature 9) and the summary (feature 11). Failed digs (already dug, off-grid, no digs left) emit nothing, so `run_ended` fires exactly once per run. The connections are made in the editor and stored in `main.tscn` (see the signals section in [architecture.md](architecture.md)).
 
 ## Side-panel UI (`scripts/main.gd`)
 Main owns the side-panel labels and updates them from DigSite's signals:
@@ -23,10 +24,14 @@ Main owns the side-panel labels and updates them from DigSite's signals:
 - `RunOverLabel` at (340, 80): `"Out of digs"`, hidden in the scene and shown on `run_ended`.
 - `FoundLabel` at (340, 108), **TEMP**: `"Found: <name>"` for the latest find, set on `artifact_found`. It's empty in the scene, so nothing shows before the first find. Feature 9's popup replaces it. Remove the node and the `_found_label` code in the same step, because `$FoundLabel` fails at load if the node is gone and the code isn't.
 
-Labels default to Mouse Filter = Ignore, and the side panel (x 308–640) doesn't overlap the grid, so neither label affects clicks.
+- `HintLabel` at (340, 136): `"Nearest artifact: N tile(s) away"` ("tile" for 1), or `"Nothing left to find"` for `NO_ARTIFACT`, set on `hint_changed` via `_hint_text()`. It's empty in the scene, so it shows nothing until the first dig. Distance 0 can't happen, because the cell just dug is already dug. How the distance is computed: [grid.md](grid.md#closest-artifact-hint).
+
+Labels default to Mouse Filter = Ignore, and the side panel (x 308–640) doesn't overlap the grid, so none of the labels affect clicks.
 
 ## Balance
-Two numbers set how generous a run is: `DigSite.dig_limit` (12) and `DigSite.artifacts_per_run` (10, on 64 cells). Both are `@export`, so they can be tuned in the Inspector. Digging at random finds 12 × 10/64 ≈ 1.9 artifacts per run. The closest-artifact hint (feature 8) should push that to roughly 4–6, which is the target: every run finds something, and clearing the site is rare. Both numbers stay as they are for the MVP. Tune them by playtesting once the hint works, not before, because the hint's distance metric changes how much each miss tells you.
+Two numbers set how generous a run is: `DigSite.dig_limit` (12) and `DigSite.artifacts_per_run` (10, on 64 cells). Both are `@export`, so they can be tuned in the Inspector. Digging at random finds 12 × 10/64 ≈ 1.9 artifacts per run. The goal is that every run finds something and clearing the site is rare.
+
+Playtested with the Chebyshev hint: about 3–4 finds per run with 12 digs, and 2–3 with 10. That's below the 4–6 first estimated, but it felt right, so 12 and 10 stay for the MVP. If runs need to be more generous later, the options in order of how little they change are: raise `dig_limit`, raise `artifacts_per_run`, or switch the hint to Manhattan distance for tighter rings (see [grid.md](grid.md#closest-artifact-hint)).
 
 ## Later features
 - **Run-end summary (11):** listens to `run_ended`. It replaces or extends `RunOverLabel`. Burials can contain duplicates, so it has to decide whether it counts finds or different kinds found.

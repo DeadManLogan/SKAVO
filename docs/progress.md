@@ -7,7 +7,7 @@
 - [x] 5. Artifact data definition (Resource)
 - [x] 6. Artifact placement (random burial)
 - [x] 7. Artifact discovery on dig
-- [ ] 8. Closest-artifact hint
+- [x] 8. Closest-artifact hint
 - [ ] 9. Found-artifact popup
 - [ ] 10. Placeholder-to-final art pass
 - [ ] 11. Run-end summary screen
@@ -191,3 +191,27 @@ scenes/main.tscn      + FoundLabel (340, 108), empty text; artifact_found connec
 - Once every artifact is found, there's no closest one. Decide what the hint shows then.
 - Remove the TEMP `_print_burial_map()` at the end of feature 8.
 - Feature 9 (popup): it listens to `artifact_found`. Remove the `FoundLabel` node and `_found_label` / its handler code in the same step. If only one of them is removed, either `$FoundLabel` fails at load or an orphan label stays.
+
+### 8. Closest-artifact hint
+**Built:** After each successful dig, the side panel shows "Nearest artifact: N tile(s) away", the distance from the tile just dug to the closest unfound artifact. Once every artifact is found it shows "Nothing left to find". It's empty before the first dig. The TEMP burial map print is gone.
+
+**Structure:**
+```
+scripts/grid/dig_grid.gd   + NO_ARTIFACT (-1), closest_unfound_distance(from) -> int, _chebyshev_distance()
+scripts/dig_site.gd        + signal hint_changed(distance: int), emitted in _try_dig; - TEMP _print_burial_map()
+scripts/main.gd            + _hint_label, _on_dig_site_hint_changed(), _hint_text()
+scenes/main.tscn           + HintLabel (340, 136), empty text; hint_changed connected to Main
+```
+
+**Decisions:**
+- Chebyshev distance (`max(|dx|, |dy|)`): distance N is a square ring, and 1 means touching, diagonals included. That's easy to read on a grid. Manhattan would be tighter (4N cells per ring instead of 8N) and is a one-line swap in `_chebyshev_distance` if hints ever feel too vague.
+- Measured from the tile just dug, not from all dug tiles, so the player can link the number to one tile.
+- `NO_ARTIFACT` (-1) instead of a second signal for the all-found case. Main turns it into text.
+- Signal order in `_try_dig`: `artifact_found`, `digs_left_changed`, `hint_changed`, `run_ended`. The last dig still updates the hint before the run ends. That's harmless and needs no special case.
+- Balance kept at 12 digs and 10 artifacts. Playtest with the hint: about 3–4 finds per run (2–3 with 10 digs). That's below the original 4–6 estimate, but it felt right. See [run.md](run.md#balance).
+
+**Next feature needs to know (9, found-artifact popup):**
+- Listen to `artifact_found(artifact, cell)`. It's emitted before `hint_changed` and `run_ended`, so on the last dig the popup opens while the hint and "Out of digs" update underneath.
+- Remove the TEMP `FoundLabel` node and the `_found_label` code / `_on_dig_site_artifact_found` body in the same step. That leaves a gap at y 108 above `HintLabel` (y 136). Move `HintLabel` up to 108 then, or leave it.
+- The popup's root Control needs Mouse Filter = Stop (the default for `Panel`), so clicks on it don't dig the tile underneath. `_unhandled_input` already handles this.
+- Without the burial map, use **Artifacts Per Run** in the Inspector (for example 64) to test finds quickly, and revert it afterwards.

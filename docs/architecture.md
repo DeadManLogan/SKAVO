@@ -45,6 +45,7 @@ Main (Node2D)               scenes/main.tscn, main scene, scripts/main.gd (min w
 ├── Title (Label)           placeholder, at (52, 16)
 ├── DigsLabel (Label)       at (340, 52), "Digs left: N", text set by main.gd
 ├── RunOverLabel (Label)    at (340, 80), "Out of digs", hidden until run_ended
-└── FoundLabel (Label)      at (340, 108), TEMP "Found: <name>" until the popup (feature 9)
+├── FoundLabel (Label)      at (340, 108), TEMP "Found: <name>" until the popup (feature 9)
+└── HintLabel (Label)       at (340, 136), "Nearest artifact: N tiles away", text set by main.gd
 ```
-Children draw in tree order, so Background must stay first. Screen layout: the grid takes x 52–308, and x 308–640 is the side panel (dig counter, run-over message, latest find, and the hint later). See [grid.md](grid.md) and [run.md](run.md).
+Children draw in tree order, so Background must stay first. Screen layout: the grid takes x 52–308, and x 308–640 is the side panel (dig counter, run-over message, latest find, hint). See [grid.md](grid.md) and [run.md](run.md).

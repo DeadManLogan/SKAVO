@@ -1,6 +1,9 @@
 class_name DigGrid
 extends RefCounted
 
+# Returned by closest_unfound_distance() when every buried artifact has been dug up.
+const NO_ARTIFACT := -1
+
 var width: int
 var height: int
 var dig_limit: int
@@ -42,6 +45,19 @@ func artifact_at(cell: Vector2i) -> Artifact:
 	return _buried.get(cell)
 
 
+# Chebyshev distance (diagonals count as 1), so distance N is the square ring N cells out.
+# Unfound artifacts are buried cells that aren't dug, so no separate found set is needed.
+func closest_unfound_distance(from: Vector2i) -> int:
+	var closest := NO_ARTIFACT
+	for cell in _buried:
+		if is_dug(cell):
+			continue
+		var distance := _chebyshev_distance(from, cell)
+		if closest == NO_ARTIFACT or distance < closest:
+			closest = distance
+	return closest
+
+
 # Buries `count` artifacts in distinct random undug cells. Each one is an independent
 # random pick from `artifacts`, so duplicates are allowed.
 func bury(artifacts: Array[Artifact], count: int) -> void:
@@ -55,6 +71,11 @@ func bury(artifacts: Array[Artifact], count: int) -> void:
 	for i in mini(count, cells.size()):
 		var artifact: Artifact = artifacts.pick_random()
 		_buried[cells[i]] = artifact
+
+
+func _chebyshev_distance(a: Vector2i, b: Vector2i) -> int:
+	var delta := (a - b).abs()
+	return maxi(delta.x, delta.y)
 
 
 func _undug_cells() -> Array[Vector2i]:

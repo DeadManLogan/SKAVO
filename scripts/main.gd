@@ -5,6 +5,7 @@ extends Node2D
 @onready var _run_over_label: Label = $RunOverLabel
 # TEMP (feature 7): shows the latest find until the popup (feature 9) replaces it.
 @onready var _found_label: Label = $FoundLabel
+@onready var _hint_label: Label = $HintLabel
 
 
 func _ready() -> void:
@@ -27,5 +28,16 @@ func _on_dig_site_artifact_found(artifact: Artifact, _cell: Vector2i) -> void:
 	_found_label.text = "Found: %s" % artifact.name
 
 
+func _on_dig_site_hint_changed(distance: int) -> void:
+	_hint_label.text = _hint_text(distance)
+
+
 func _show_digs_left(digs_left: int) -> void:
 	_digs_label.text = "Digs left: %d" % digs_left
+
+
+func _hint_text(distance: int) -> String:
+	if distance == DigGrid.NO_ARTIFACT:
+		return "Nothing left to find"
+	var unit := "tile" if distance == 1 else "tiles"
+	return "Nearest artifact: %d %s away" % [distance, unit]

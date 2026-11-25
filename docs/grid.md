@@ -15,6 +15,7 @@ grid.is_dug(Vector2i(0, 0))        # true
 grid.digs_left()                   # 11
 grid.bury(Artifact.load_all(), 10) # 10 random undug cells, each with a random artifact
 grid.artifact_at(Vector2i(3, 5))   # an Artifact, or null
+grid.closest_unfound_distance(Vector2i(0, 0))  # e.g. 2, or DigGrid.NO_ARTIFACT (-1)
 ```
 
 - `width`, `height`: grid size in cells.
@@ -26,6 +27,7 @@ grid.artifact_at(Vector2i(3, 5))   # an Artifact, or null
 
 - `bury(artifacts: Array[Artifact], count: int)`: buries artifacts at run start. See [Burial](#burial).
 - `artifact_at(cell) -> Artifact`: the artifact buried in that cell, or `null`.
+- `closest_unfound_distance(from) -> int`: distance from `from` to the nearest buried cell that isn't dug, or `NO_ARTIFACT` (-1) if none are left. See [Closest-artifact hint](#closest-artifact-hint).
 
 Dug cells are stored in `_dug: Dictionary[Vector2i, bool]`, used as a set: a cell is dug if it's a key. Burials are stored in `_buried: Dictionary[Vector2i, Artifact]`, keyed by the same `Vector2i`. `DigGrid` is the source of truth for dug state and burials. `class_name` registers it globally, so no `preload` is needed.
 
@@ -39,6 +41,13 @@ Dug cells are stored in `_dug: Dictionary[Vector2i, bool]`, used as a set: a cel
 - It uses the global RNG, which Godot 4 seeds randomly at startup, so every run differs. No seed is passed in, because nothing needs reproducible layouts yet.
 - It's separate from `_init`, so a grid can be created without artifacts.
 - The `.tres` resources are shared instances (see [artifacts.md](artifacts.md)). `_buried` only holds references to them, and run state like "found" is never written into them.
+
+### Closest-artifact hint
+`closest_unfound_distance(from)` loops over the keys of `_buried`, skips the dug ones, and returns the smallest distance. Unfound artifacts are derived (buried and not dug), so there's no found set to keep in sync. A loop over at most 64 cells per dig needs no spatial structure.
+
+The distance is **Chebyshev**, `max(|dx|, |dy|)`, in `_chebyshev_distance()`. Diagonals count as 1, so distance N is the square ring of 8N cells around `from`, and 1 means touching. Square rings are easy to picture on a grid. **Manhattan** (`|dx| + |dy|`) would give diamond rings of 4N cells, so each hint would say more but be harder to read. If playtesting ever shows the hint is too vague, swapping the metric only changes `_chebyshev_distance()`.
+
+The distance is measured from the tile just dug, not from all dug tiles, so the player can link each number to one tile. `NO_ARTIFACT` is returned once everything is found, and the UI decides what to show for it.
 
 ## Tile (`scripts/tile.gd`, `scenes/tile.tscn`)
 A `Node2D` that draws one `SIZE` x `SIZE` (32x32) square in `_draw()`, from its origin to (32, 32). The node's position is the tile's top-left corner.
@@ -56,7 +65,7 @@ A `Node2D` that draws one `SIZE` x `SIZE` (32x32) square in `_draw()`, from its 
 ## DigSite (`scripts/dig_site.gd`, `scenes/dig_site.tscn`)
 A `Node2D` that owns a `DigGrid` and spawns one Tile per cell in `_ready()`. The tiles exist only at runtime: the saved scene is just the root node, and you can see the tiles in the Remote scene tree while the game runs.
 
-`_ready()` creates the grid, buries `Artifact.load_all()` with `artifacts_per_run`, spawns the tiles and prints the burial map.
+`_ready()` creates the grid, buries `Artifact.load_all()` with `artifacts_per_run`, and spawns the tiles.
 
 | Setting | Kind | Default | Why |
 |---|---|---|---|
@@ -66,7 +75,7 @@ A `Node2D` that owns a `DigGrid` and spawns one Tile per cell in `_ready()`. The
 
 To change an exported value, select **DigSite** in `main.tscn` and edit it in the Inspector. The value is saved as an override in `main.tscn`, the script keeps the default, and the revert arrow restores it. Exported values are applied before `_ready()`, so the grid uses the Inspector value.
 
-**TEMP:** `_print_burial_map()` prints the grid as `X` (buried) and `.` to the Output panel, then one `(x, y) name` line per buried cell. It's there to test discovery (feature 7) and the hint (feature 8), and gets removed after feature 8.
+To test finds quickly, raise **Artifacts Per Run** (up to 64) in the Inspector, then revert it.
 
 - `cell_to_local(cell) -> Vector2`: `cell * Tile.SIZE`, in DigSite's local space.
 - `local_to_cell(pos) -> Vector2i`: the inverse, using `floor` so positions above or left of the grid give negative cells, which `is_in_bounds` rejects.
@@ -75,7 +84,7 @@ To change an exported value, select **DigSite** in `main.tscn` and edit it in th
 The helpers work in local space, not global, because DigSite is offset in Main. Moving DigSite doesn't affect them.
 
 ### Digging
-`_unhandled_input` takes left mouse **presses** (not releases, so a click can't be dragged onto another tile). It converts the click with `local_to_cell(make_input_local(event).position)` and calls `_try_dig(cell)`. When `grid.dig(cell)` returns `true`, `_try_dig` looks up `grid.artifact_at(cell)` and calls `set_dug(artifact != null)` on the tile. It emits `artifact_found(artifact, cell)` if there was one, then `digs_left_changed(digs_left)`, then `run_ended` if that was the last dig (see [run.md](run.md) for why that order). A failed dig emits nothing.
+`_unhandled_input` takes left mouse **presses** (not releases, so a click can't be dragged onto another tile). It converts the click with `local_to_cell(make_input_local(event).position)` and calls `_try_dig(cell)`. When `grid.dig(cell)` returns `true`, `_try_dig` looks up `grid.artifact_at(cell)` and calls `set_dug(artifact != null)` on the tile. It emits `artifact_found(artifact, cell)` if there was one, then `digs_left_changed(digs_left)`, then `hint_changed(grid.closest_unfound_distance(cell))`, then `run_ended` if that was the last dig (see [run.md](run.md) for why that order). A failed dig emits nothing.
 
 A find isn't stored anywhere: it's a cell that's both buried and dug, the same way `digs_left()` is derived from `_dug`. Unfound artifacts are the buried cells that aren't dug.
 
