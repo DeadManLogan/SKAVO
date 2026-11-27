@@ -34,7 +34,7 @@ The `.tres` files are small text files: a reference to the script plus the value
 A `.tres` stores only the values that differ from the defaults, so adding a field, for example rarity after the MVP, doesn't break existing files. They load with the field's default value, and you set it only where it differs.
 
 ## Sprites
-The art is made in a separate art repo by a pixel-art agent, from [art-brief.md](art-brief.md). That brief lists the specs: a 32x32 canvas, transparent background, no partial alpha, exported at 1x, and one PNG per artifact named the same as the `.tres`. The PNGs go into `art/artifacts/` and get assigned to each `sprite` field in feature 10. Until then, `sprite` is `null`, and the popup (feature 9) has to handle that.
+The art is made in a separate art repo by a pixel-art agent, from [art-brief.md](art-brief.md). That brief lists the specs: a 32x32 canvas, transparent background, no partial alpha, exported at 1x, and one PNG per artifact named the same as the `.tres`. The PNGs go into `art/artifacts/` and get assigned to each `sprite` field in feature 10. Until then, `sprite` is `null`, and the popup shows a gold placeholder square in the 64x64 sprite slot instead (see [popup.md](popup.md)).
 
 ## Writing blurbs
 The voice is an experienced archaeologist with a sense of humor, explaining the find to a class. Use plain words, not technical ones, and keep it to about 300 characters, which fits the popup. Each blurb covers:

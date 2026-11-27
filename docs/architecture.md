@@ -3,11 +3,12 @@
 ## Folder layout
 ```
 res://
-├── scenes/          .tscn files (main, and later dig_site, tile, popups)
+├── scenes/          .tscn files (main, dig_site, tile, artifact_popup)
 ├── scripts/         scripts attached to scenes (rendering, input, UI)
 │   ├── grid/        plain GDScript logic classes, no Node dependency
 │   └── artifacts/   Artifact Resource script and its loader
 ├── data/artifacts/  one .tres per artifact
+├── shaders/         .gdshader files (screen_blur for the popup backdrop)
 └── art/             PNG exports from the art repo (feature 10), artifacts in art/artifacts/
 ```
 Only folders that contain files are tracked by git.
@@ -30,6 +31,9 @@ Connections are made in the editor (Node dock → Signals) and saved in the pare
 ### Input: game clicks go through `_unhandled_input`
 Godot delivers input in order: `_input`, then GUI (Controls), then `_unhandled_input`. Game clicks (digging) are read in `_unhandled_input`, so any Control under the mouse with **Mouse → Filter = Stop** (the default for `ColorRect`, `Panel`, `Button`) swallows the click first. That's what we want for real UI like the found-artifact popup, which then blocks digging with no extra code. Decorative Controls that cover the grid or the screen (like `Background`) must be set to **Filter = Ignore**, or clicks never reach the game.
 
+### Screen-space UI goes on a CanvasLayer
+A Control's anchors are relative to its parent's rect. A `Node2D` parent (like `Main`) has no rect, so anchor presets such as Full Rect resolve to 0x0 at the origin, and a Full Rect child under it ends up with no size. A Control only uses the viewport as its anchor rect when it has no CanvasItem parent, which is the case directly under a `CanvasLayer`. Full-screen UI (the found-artifact popup) therefore lives under `PopupLayer` (CanvasLayer, layer 1). A layer above 0 also draws above the game regardless of tree order. Side-panel labels and `Background` sit directly under `Main` without anchors, at fixed offsets, so they don't need a layer.
+
 ### Tuning values are exported
 Gameplay numbers that are worth tweaking while testing (digs per run, artifacts per run) are `@export` vars on the node that owns them, so they can be changed in the Inspector without editing code. Values that never change, or that other code depends on (`Tile.SIZE`, `GRID_SIZE` while the layout assumes 256 px), stay `const`. Logic classes in `scripts/grid/` never hard-code these values. They receive them through constructor or method arguments.
 
@@ -45,7 +49,8 @@ Main (Node2D)               scenes/main.tscn, main scene, scripts/main.gd (min w
 ├── Title (Label)           placeholder, at (52, 16)
 ├── DigsLabel (Label)       at (340, 52), "Digs left: N", text set by main.gd
 ├── RunOverLabel (Label)    at (340, 80), "Out of digs", hidden until run_ended
-├── FoundLabel (Label)      at (340, 108), TEMP "Found: <name>" until the popup (feature 9)
-└── HintLabel (Label)       at (340, 136), "Nearest artifact: N tiles away", text set by main.gd
+├── HintLabel (Label)       at (340, 108), "Nearest artifact: N tiles away", text set by main.gd
+└── PopupLayer (CanvasLayer)                layer 1, above the game
+    └── ArtifactPopup (ColorRect)           scenes/artifact_popup.tscn, hidden until a find
 ```
-Children draw in tree order, so Background must stay first. Screen layout: the grid takes x 52–308, and x 308–640 is the side panel (dig counter, run-over message, latest find, hint). See [grid.md](grid.md) and [run.md](run.md).
+Children draw in tree order, so Background must stay first. Screen layout: the grid takes x 52–308, and x 308–640 is the side panel (dig counter, run-over message, hint). See [grid.md](grid.md) and [run.md](run.md).

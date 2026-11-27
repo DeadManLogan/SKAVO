@@ -10,7 +10,7 @@ A run is one attempt at the dig site: a fixed number of digs, then the run ends.
 
 | Signal | Emitted | Listener |
 |---|---|---|
-| `artifact_found(artifact: Artifact, cell: Vector2i)` | After a successful dig on a cell with a buried artifact | `Main._on_dig_site_artifact_found` |
+| `artifact_found(artifact: Artifact, cell: Vector2i)` | After a successful dig on a cell with a buried artifact | `Main._on_dig_site_artifact_found` → `ArtifactPopup.show_artifact()` ([popup.md](popup.md)) |
 | `digs_left_changed(digs_left: int)` | After every successful dig, including the last | `Main._on_dig_site_digs_left_changed` |
 | `hint_changed(distance: int)` | After every successful dig, including the last. `distance` is from the dug cell to the closest unfound artifact, or `DigGrid.NO_ARTIFACT` (-1) | `Main._on_dig_site_hint_changed` |
 | `run_ended` | Right after the dig that brings `digs_left()` to 0 | `Main._on_dig_site_run_ended` |
@@ -22,11 +22,11 @@ Main owns the side-panel labels and updates them from DigSite's signals:
 
 - `DigsLabel` at (340, 52): `"Digs left: %d"`. `_ready()` sets the initial text from `_dig_site.grid.digs_left()`. That works because Godot runs `_ready()` on children before their parent, so DigSite's grid already exists. The label's text in the scene is empty.
 - `RunOverLabel` at (340, 80): `"Out of digs"`, hidden in the scene and shown on `run_ended`.
-- `FoundLabel` at (340, 108), **TEMP**: `"Found: <name>"` for the latest find, set on `artifact_found`. It's empty in the scene, so nothing shows before the first find. Feature 9's popup replaces it. Remove the node and the `_found_label` code in the same step, because `$FoundLabel` fails at load if the node is gone and the code isn't.
-
-- `HintLabel` at (340, 136): `"Nearest artifact: N tile(s) away"` ("tile" for 1), or `"Nothing left to find"` for `NO_ARTIFACT`, set on `hint_changed` via `_hint_text()`. It's empty in the scene, so it shows nothing until the first dig. Distance 0 can't happen, because the cell just dug is already dug. How the distance is computed: [grid.md](grid.md#closest-artifact-hint).
+- `HintLabel` at (340, 108): `"Nearest artifact: N tile(s) away"` ("tile" for 1), or `"Nothing left to find"` for `NO_ARTIFACT`, set on `hint_changed` via `_hint_text()`. It's empty in the scene, so it shows nothing until the first dig. Distance 0 can't happen, because the cell just dug is already dug. How the distance is computed: [grid.md](grid.md#closest-artifact-hint).
 
 Labels default to Mouse Filter = Ignore, and the side panel (x 308–640) doesn't overlap the grid, so none of the labels affect clicks.
+
+Finds are shown in the found-artifact popup, not in the side panel. Main forwards `artifact_found` to it. See [popup.md](popup.md).
 
 ## Balance
 Two numbers set how generous a run is: `DigSite.dig_limit` (12) and `DigSite.artifacts_per_run` (10, on 64 cells). Both are `@export`, so they can be tuned in the Inspector. Digging at random finds 12 × 10/64 ≈ 1.9 artifacts per run. The goal is that every run finds something and clearing the site is rare.
@@ -34,5 +34,5 @@ Two numbers set how generous a run is: `DigSite.dig_limit` (12) and `DigSite.art
 Playtested with the Chebyshev hint: about 3–4 finds per run with 12 digs, and 2–3 with 10. That's below the 4–6 first estimated, but it felt right, so 12 and 10 stay for the MVP. If runs need to be more generous later, the options in order of how little they change are: raise `dig_limit`, raise `artifacts_per_run`, or switch the hint to Manhattan distance for tighter rings (see [grid.md](grid.md#closest-artifact-hint)).
 
 ## Later features
-- **Run-end summary (11):** listens to `run_ended`. It replaces or extends `RunOverLabel`. Burials can contain duplicates, so it has to decide whether it counts finds or different kinds found.
+- **Run-end summary (11):** listens to `run_ended`. It replaces or extends `RunOverLabel`. On a last-dig find, the popup is still open when `run_ended` fires, so the summary has to wait for it to close (see [popup.md](popup.md#later)). Burials can contain duplicates, so it has to decide whether it counts finds or different kinds found.
 - **Restart (12):** needs a fresh `DigGrid` (which resets the dug cells, the count and the burials together) followed by a new `bury()`, the tiles reset, and `RunOverLabel` hidden again.

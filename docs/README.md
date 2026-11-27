@@ -9,6 +9,7 @@ How the game is built and why. Code is the source of truth. If a doc disagrees w
 | [project-setup.md](project-setup.md) | Display, stretch and rendering settings and why they were chosen |
 | [grid.md](grid.md) | `DigGrid`, cell coordinates, artifact burial, closest-artifact hint, tile rendering, DigSite settings |
 | [run.md](run.md) | Dig limit, run-end signals, side-panel UI |
+| [popup.md](popup.md) | Found-artifact popup: scene, blur backdrop, click blocking, `PopupLayer` |
 | [artifacts.md](artifacts.md) | `Artifact` Resource, loading, adding an artifact, sprite pipeline, blurb voice |
 | [art-brief.md](art-brief.md) | Sprite specs and artifact list for the pixel-art agent (separate art repo) |
 

@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bb6xs5n7cgf43" path="res://scripts/main.gd" id="1_0wfyh"]
 [ext_resource type="PackedScene" uid="uid://bre1r7y6eerhs" path="res://scenes/dig_site.tscn" id="1_o5qli"]
+[ext_resource type="PackedScene" uid="uid://vf2r1m2dvb46" path="res://scenes/artifact_popup.tscn" id="3_sugp2"]
 
 [node name="Main" type="Node2D" unique_id=1062774910]
 script = ExtResource("1_0wfyh")
@@ -14,8 +15,6 @@ color = Color(0.23137255, 0.18431373, 0.16470589, 1)
 
 [node name="DigSite" parent="." unique_id=1760915373 instance=ExtResource("1_o5qli")]
 position = Vector2(52, 52)
-dig_limit = 10
-artifacts_per_run = 3
 
 [node name="Title" type="Label" parent="." unique_id=316504727]
 offset_left = 52.0
@@ -38,17 +37,16 @@ offset_right = 425.0
 offset_bottom = 103.0
 text = "Out of digs"
 
-[node name="FoundLabel" type="Label" parent="." unique_id=1101813970]
+[node name="HintLabel" type="Label" parent="." unique_id=103485449]
 offset_left = 340.0
 offset_top = 108.0
 offset_right = 380.0
 offset_bottom = 131.0
 
-[node name="HintLabel" type="Label" parent="." unique_id=103485449]
-offset_left = 340.0
-offset_top = 136.0
-offset_right = 380.0
-offset_bottom = 159.0
+[node name="PopupLayer" type="CanvasLayer" parent="." unique_id=1783743708]
+
+[node name="ArtifactPopup" parent="PopupLayer" unique_id=287119019 instance=ExtResource("3_sugp2")]
+visible = false
 
 [connection signal="artifact_found" from="DigSite" to="." method="_on_dig_site_artifact_found"]
 [connection signal="digs_left_changed" from="DigSite" to="." method="_on_dig_site_digs_left_changed"]

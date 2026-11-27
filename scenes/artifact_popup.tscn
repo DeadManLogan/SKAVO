@@ -1,0 +1,98 @@
+[gd_scene format=3 uid="uid://vf2r1m2dvb46"]
+
+[ext_resource type="Script" uid="uid://cv7adat28u3cb" path="res://scripts/artifact_popup.gd" id="1_165dq"]
+[ext_resource type="Shader" uid="uid://s0frxp1634i4" path="res://shaders/screen_blur.gdshader" id="1_ggceq"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_opx28"]
+shader = ExtResource("1_ggceq")
+shader_parameter/radius = 3
+shader_parameter/spread = 1.5
+shader_parameter/tint = Color(0, 0, 0, 0.4)
+
+[node name="ArtifactPopup" type="ColorRect" unique_id=287119019]
+material = SubResource("ShaderMaterial_opx28")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_165dq")
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=967332866]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Card" type="PanelContainer" parent="CenterContainer" unique_id=1028690013]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/Card" unique_id=1987024741]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Card/MarginContainer" unique_id=1960768695]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="CenterContainer/Card/MarginContainer/VBoxContainer" unique_id=139007390]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SpriteSlot" type="Control" parent="CenterContainer/Card/MarginContainer/VBoxContainer/Header" unique_id=2136969528]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="SpritePlaceholder" type="ColorRect" parent="CenterContainer/Card/MarginContainer/VBoxContainer/Header/SpriteSlot" unique_id=2049597385]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.83137256, 0.6627451, 0.22745098, 1)
+
+[node name="Sprite" type="TextureRect" parent="CenterContainer/Card/MarginContainer/VBoxContainer/Header/SpriteSlot" unique_id=1378087055]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Titles" type="VBoxContainer" parent="CenterContainer/Card/MarginContainer/VBoxContainer/Header" unique_id=707756383]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="NameLabel" type="Label" parent="CenterContainer/Card/MarginContainer/VBoxContainer/Header/Titles" unique_id=1975888879]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Silver Denarius"
+
+[node name="EraLabel" type="Label" parent="CenterContainer/Card/MarginContainer/VBoxContainer/Header/Titles" unique_id=2017086993]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Roman Empire, 1st century AD"
+
+[node name="BlurbLabel" type="Label" parent="CenterContainer/Card/MarginContainer/VBoxContainer" unique_id=699464851]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(424, 0)
+layout_mode = 2
+text = "This glossy red fragment is terra sigillata, the Roman 'good plates'. It was made in huge workshops in Italy and Gaul and shipped across the empire. At La Graufesenque in France, a single kiln could fire around 30,000 pots at once, and the potters scratched their tally lists onto plates that still survive. Mass production, Roman style.	"
+autowrap_mode = 3
+
+[node name="CloseButton" type="Button" parent="CenterContainer/Card/MarginContainer/VBoxContainer" unique_id=262100752]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Close"
+
+[connection signal="pressed" from="CenterContainer/Card/MarginContainer/VBoxContainer/CloseButton" to="." method="_on_close_button_pressed"]

@@ -8,7 +8,7 @@
 - [x] 6. Artifact placement (random burial)
 - [x] 7. Artifact discovery on dig
 - [x] 8. Closest-artifact hint
-- [ ] 9. Found-artifact popup
+- [x] 9. Found-artifact popup
 - [ ] 10. Placeholder-to-final art pass
 - [ ] 11. Run-end summary screen
 - [ ] 12. Restart / new run
@@ -215,3 +215,31 @@ scenes/main.tscn           + HintLabel (340, 136), empty text; hint_changed conn
 - Remove the TEMP `FoundLabel` node and the `_found_label` code / `_on_dig_site_artifact_found` body in the same step. That leaves a gap at y 108 above `HintLabel` (y 136). Move `HintLabel` up to 108 then, or leave it.
 - The popup's root Control needs Mouse Filter = Stop (the default for `Panel`), so clicks on it don't dig the tile underneath. `_unhandled_input` already handles this.
 - Without the burial map, use **Artifacts Per Run** in the Inspector (for example 64) to test finds quickly, and revert it afterwards.
+
+### 9. Found-artifact popup
+**Built:** A find opens a centered window with a gold sprite placeholder, the name, the era, the blurb and a Close button. The game behind it is blurred and darkened and can't be clicked. Close resumes digging. A find on the last dig opens the popup over "Out of digs". The TEMP `FoundLabel` is gone, and the hint moved up to y 108.
+
+**Structure:**
+```
+scenes/artifact_popup.tscn    ArtifactPopup (ColorRect, Full Rect) > CenterContainer > Card (PanelContainer) > ... (see popup.md)
+scripts/artifact_popup.gd     ArtifactPopup: show_artifact(artifact), _on_close_button_pressed() -> hide()
+shaders/screen_blur.gdshader  box blur + tint of the screen texture (radius, spread, tint)
+scripts/main.gd               - _found_label; + _artifact_popup ($PopupLayer/ArtifactPopup); artifact_found -> show_artifact()
+scenes/main.tscn              - FoundLabel; HintLabel -> (340, 108); + PopupLayer (CanvasLayer) > ArtifactPopup (hidden)
+docs/popup.md                 new
+```
+
+**Decisions:**
+- Modal through a full-screen backdrop with Mouse Filter = Stop: it blocks digging with no flag in DigSite, and a second find can't happen while the popup is open.
+- Close button only (centered at the bottom), not click-anywhere, so a quick double click doesn't skip the blurb.
+- Blur via an explicit-sample box blur shader, because Compatibility has no screen-texture mipmaps for `textureLod()`.
+- The popup lives under a `CanvasLayer`, because under the `Node2D` Main, Full Rect resolves to 0x0 (see [architecture.md](architecture.md#screen-space-ui-goes-on-a-canvaslayer)).
+- The panel width is set once, on `BlurbLabel` (424 min width, 448 with margins).
+- 64x64 sprite slot with Keep Aspect Centered: works for 32x32 at 2x or 64x64 at 1x, so the sprite-size question stays open for feature 10.
+- Text is soft because the default vector font is anti-aliased and then scaled. A pixel font is planned for the art pass (see [project-setup.md](project-setup.md)).
+
+**Next feature needs to know (10, art pass):**
+- Assigning `sprite` in each `.tres` is all the popup needs. It hides the gold placeholder automatically. Decide the sprite size (open question) first.
+- Add a pixel font with Antialiasing = None as the project's default theme font. It fixes the soft text in the side panel and the popup.
+- The popup's look (Card panel style, the default Button) is still the default theme. Restyling it is optional art-pass work.
+- Feature 11 (summary): on a last-dig find, `run_ended` fires while the popup is open. The summary must wait for the popup to close, which needs a `closed` signal on `ArtifactPopup`. Reuse `PopupLayer` and the blur shader.

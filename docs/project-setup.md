@@ -15,7 +15,7 @@ Godot 4.6, GDScript only, Compatibility renderer (`gl_compatibility`). All value
 
 **Game embedding is off** (Editor → Editor Settings → Run → Window Placement → Game Embed Mode = Disabled; search "embed"). F5 then opens a real game window, so window size, integer scaling and click mapping behave the way they will in an exported build. It's an editor-wide setting, not stored in the project, so set it again on a new machine, and **restart the editor** after changing it, or F5 keeps embedding. `Engine.is_embedded_in_editor()` tells you which mode a run is in.
 
-Consequence of `viewport` mode: the default font and any UI text are also rendered at 640x360 and scaled, so text looks chunky. That's expected. A pixel font in the art pass fixes it.
+**Text looks soft.** That's a consequence of `viewport` mode. The default font is a smooth vector font, drawn at 640x360 with anti-aliased (semi-transparent) edge pixels. The whole frame is then scaled up 2x or more with Nearest, so each grey edge pixel becomes a visible grey block, and the text looks blurry instead of crisp. Turning anti-aliasing off on the default font only makes it jagged, because it isn't designed for 16 px on a pixel grid. The fix is a pixel font, drawn on the pixel grid, used at its native size (or a whole-number multiple of it) with **Antialiasing = None** in its import settings, and set as the project's default font. That's planned for the art pass (feature 10). Rendering text at window resolution instead (`canvas_items` stretch mode) would make it sharp, but it would break the pixel-perfect rendering of everything else.
 
 ## Rendering
 
